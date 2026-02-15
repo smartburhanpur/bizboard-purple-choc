@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User, UserRole } from '@/types';
+import { authService } from '@/services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -10,78 +11,35 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Demo users for testing
-const DEMO_USERS: Record<string, { password: string; user: User }> = {
-  'superadmin@nearmeb2b.city': {
-    password: 'admin123',
-    user: {
-      id: '1',
-      name: 'Rajesh Kumar',
-      email: 'superadmin@nearmeb2b.city',
-      phone: '+91 98765 43210',
-      role: 'super_admin',
-      status: 'active',
-      createdAt: '2024-01-01',
-    },
-  },
-  'admin@nearmeb2b.city': {
-    password: 'admin123',
-    user: {
-      id: '2',
-      name: 'Priya Sharma',
-      email: 'admin@nearmeb2b.city',
-      phone: '+91 98765 43211',
-      role: 'admin',
-      status: 'active',
-      createdAt: '2024-02-01',
-    },
-  },
-  'salesman@nearmeb2b.city': {
-    password: 'admin123',
-    user: {
-      id: '3',
-      name: 'Amit Patel',
-      email: 'salesman@nearmeb2b.city',
-      phone: '+91 98765 43212',
-      role: 'salesman',
-      status: 'active',
-      createdAt: '2024-03-01',
-    },
-  },
-};
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('nearmeb2b_user');
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem('nearmeb2b_user');
-      }
+    const token = localStorage.getItem('nearmeb2b_token');
+    if (token) {
+      authService.getMe()
+        .then((u) => setUser(u))
+        .catch(() => {
+          localStorage.removeItem('nearmeb2b_token');
+          localStorage.removeItem('nearmeb2b_user');
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 800));
-    const entry = DEMO_USERS[email.toLowerCase()];
-    if (!entry || entry.password !== password) {
-      throw new Error('Invalid email or password');
-    }
-    if (entry.user.status === 'blocked') {
-      throw new Error('Your account has been blocked');
-    }
-    setUser(entry.user);
-    localStorage.setItem('nearmeb2b_user', JSON.stringify(entry.user));
+    const { token, user: loggedInUser } = await authService.login({ email, password });
+    localStorage.setItem('nearmeb2b_token', token);
+    localStorage.setItem('nearmeb2b_user', JSON.stringify(loggedInUser));
+    setUser(loggedInUser);
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
+    localStorage.removeItem('nearmeb2b_token');
     localStorage.removeItem('nearmeb2b_user');
   }, []);
 
@@ -103,6 +61,7 @@ export function getRolePath(role: UserRole): string {
     case 'super_admin': return '/super-admin/dashboard';
     case 'admin': return '/admin/dashboard';
     case 'salesman': return '/salesman/dashboard';
+    default: return '/login';
   }
 }
 
@@ -111,5 +70,7 @@ export function getRoleLabel(role: UserRole): string {
     case 'super_admin': return 'Super Admin';
     case 'admin': return 'Admin';
     case 'salesman': return 'Salesman';
+    case 'owner': return 'Owner';
+    case 'user': return 'User';
   }
 }

@@ -28,7 +28,8 @@ export default function LoginPage() {
         navigate(getRolePath(user.role), { replace: true });
       }
     } catch (err: any) {
-      toast({ title: 'Login Failed', description: err.message, variant: 'destructive' });
+      const message = err?.response?.data?.message || err?.message || 'Login failed';
+      toast({ title: 'Login Failed', description: message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -48,20 +49,6 @@ export default function LoginPage() {
           <p className="text-lg text-primary-foreground/80">
             City-based B2B business directory platform. Manage listings, payments, and approvals from one powerful dashboard.
           </p>
-          <div className="mt-12 grid grid-cols-3 gap-6 text-primary-foreground/70">
-            <div>
-              <div className="text-3xl font-bold text-primary-foreground">500+</div>
-              <div className="text-sm">Businesses</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary-foreground">25+</div>
-              <div className="text-sm">Cities</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary-foreground">50+</div>
-              <div className="text-sm">Salesmen</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -124,27 +111,6 @@ export default function LoginPage() {
               ) : 'Sign In'}
             </Button>
           </form>
-
-          <div className="mt-8 rounded-xl border border-border bg-muted/50 p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Demo Credentials</p>
-            <div className="space-y-2 text-sm">
-              {[
-                { label: 'Super Admin', email: 'superadmin@nearmeb2b.city' },
-                { label: 'Admin', email: 'admin@nearmeb2b.city' },
-                { label: 'Salesman', email: 'salesman@nearmeb2b.city' },
-              ].map((d) => (
-                <button
-                  key={d.email}
-                  type="button"
-                  onClick={() => { setEmail(d.email); setPassword('admin123'); }}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-accent transition-colors"
-                >
-                  <span className="font-medium text-foreground">{d.label}</span>
-                  <span className="text-muted-foreground">{d.email}</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

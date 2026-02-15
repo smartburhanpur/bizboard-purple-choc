@@ -1,12 +1,15 @@
 import { Building2, Users, CreditCard, TrendingUp, ClipboardCheck, Crown } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
-import { getSuperAdminStats, mockBusinesses } from '@/data/mockData';
+import { useDashboardStats } from '@/services/dashboardService';
+import { useBusinesses } from '@/services/businessService';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { StatsSkeleton, TableSkeleton } from '@/components/TableSkeleton';
+import type { User } from '@/types';
 
 export default function SuperAdminDashboard() {
-  const stats = getSuperAdminStats();
-  const recent = mockBusinesses.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5);
+  const { data: stats, isLoading: statsLoading } = useDashboardStats('super_admin');
+  const { data: businessesData, isLoading: businessesLoading } = useBusinesses({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' });
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -16,12 +19,16 @@ export default function SuperAdminDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <StatsCard title="Total Businesses" value={stats.totalBusinesses} icon={Building2} variant="primary" trend="+12% this month" />
-        <StatsCard title="Premium Listings" value={stats.premiumListings} icon={Crown} variant="premium" />
-        <StatsCard title="Total Salesmen" value={stats.totalSalesmen} icon={Users} variant="info" />
-        <StatsCard title="Total Revenue" value={`₹${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} variant="success" trend="+8% this month" />
-        <StatsCard title="Pending Approvals" value={stats.pendingApprovals} icon={ClipboardCheck} variant="warning" />
-        <StatsCard title="Verified Payments" value={stats.verifiedPayments} icon={TrendingUp} variant="default" />
+        {statsLoading ? <StatsSkeleton count={6} /> : stats && (
+          <>
+            <StatsCard title="Total Businesses" value={stats.totalBusinesses} icon={Building2} variant="primary" />
+            <StatsCard title="Premium Listings" value={stats.premiumListings} icon={Crown} variant="premium" />
+            <StatsCard title="Total Salesmen" value={stats.totalSalesmen} icon={Users} variant="info" />
+            <StatsCard title="Total Revenue" value={`₹${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} variant="success" />
+            <StatsCard title="Pending Approvals" value={stats.pendingApprovals} icon={ClipboardCheck} variant="warning" />
+            <StatsCard title="Verified Payments" value={stats.verifiedPayments} icon={TrendingUp} variant="default" />
+          </>
+        )}
       </div>
 
       <div className="rounded-xl border bg-card card-shadow">
@@ -35,21 +42,24 @@ export default function SuperAdminDashboard() {
               <TableHead>City</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Salesman</TableHead>
+              <TableHead>Created By</TableHead>
               <TableHead>Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recent.map((b) => (
-              <TableRow key={b.id}>
-                <TableCell className="font-medium">{b.name}</TableCell>
+            {businessesLoading ? <TableSkeleton cols={6} /> : businessesData?.data?.map((b) => (
+              <TableRow key={b._id}>
+                <TableCell className="font-medium">{b.businessName}</TableCell>
                 <TableCell>{b.city}</TableCell>
                 <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
-                <TableCell><StatusBadge status={b.status} /></TableCell>
-                <TableCell className="text-muted-foreground">{b.createdByName}</TableCell>
-                <TableCell className="text-muted-foreground">{b.createdAt}</TableCell>
+                <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
+                <TableCell className="text-muted-foreground">{typeof b.createdBy === 'object' ? (b.createdBy as User).name : b.createdBy}</TableCell>
+                <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
+            {!businessesLoading && (!businessesData?.data || businessesData.data.length === 0) && (
+              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No businesses found</TableCell></TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

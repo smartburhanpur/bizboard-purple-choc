@@ -1,6 +1,7 @@
 import {
   LayoutDashboard, Building2, Users, UserCog, CreditCard, BarChart3,
-  Tags, Settings, ClipboardCheck, FolderPlus, Briefcase, TrendingUp, Building
+  Tags, Settings, ClipboardCheck, FolderPlus, Briefcase, TrendingUp, Building,
+  MessageSquare, CalendarCheck, UsersRound
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,6 +36,7 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
     {
       label: 'Management',
       items: [
+        { title: 'User Management', url: '/super-admin/users', icon: UsersRound },
         { title: 'Admin Management', url: '/super-admin/admins', icon: UserCog },
         { title: 'Salesman Management', url: '/super-admin/salesmen', icon: Users },
         { title: 'Categories', url: '/super-admin/categories', icon: Tags },
@@ -45,6 +47,13 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
       items: [
         { title: 'Payments & Revenue', url: '/super-admin/payments', icon: CreditCard },
         { title: 'Reports', url: '/super-admin/reports', icon: BarChart3 },
+      ],
+    },
+    {
+      label: 'CRM',
+      items: [
+        { title: 'Leads', url: '/super-admin/leads', icon: MessageSquare },
+        { title: 'Bookings', url: '/super-admin/bookings', icon: CalendarCheck },
       ],
     },
     {
@@ -71,6 +80,13 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
         { title: 'Reports', url: '/admin/reports', icon: BarChart3 },
       ],
     },
+    {
+      label: 'CRM',
+      items: [
+        { title: 'Leads', url: '/admin/leads', icon: MessageSquare },
+        { title: 'Bookings', url: '/admin/bookings', icon: CalendarCheck },
+      ],
+    },
   ],
   salesman: [
     {
@@ -83,6 +99,8 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
       ],
     },
   ],
+  owner: [],
+  user: [],
 };
 
 export function AppSidebar() {

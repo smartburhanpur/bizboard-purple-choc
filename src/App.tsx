@@ -14,6 +14,7 @@ import SuperAdminDashboard from "@/pages/super-admin/Dashboard";
 import AllBusinessesSA from "@/pages/super-admin/AllBusinesses";
 import AdminManagement from "@/pages/super-admin/AdminManagement";
 import SalesmenManagement from "@/pages/super-admin/SalesmenManagement";
+import UserManagement from "@/pages/super-admin/UserManagement";
 import PaymentsSA from "@/pages/super-admin/Payments";
 import SettingsPage from "@/pages/super-admin/Settings";
 
@@ -30,8 +31,18 @@ import SalesmanPerformance from "@/pages/salesman/Performance";
 // Shared pages
 import CategoriesPage from "@/pages/shared/Categories";
 import ReportsPage from "@/pages/shared/Reports";
+import LeadsPage from "@/pages/shared/Leads";
+import BookingsPage from "@/pages/shared/Bookings";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 30000,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -48,11 +59,14 @@ const App = () => (
             <Route element={<RoleGuard allowedRoles={['super_admin']}><DashboardLayout /></RoleGuard>}>
               <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
               <Route path="/super-admin/businesses" element={<AllBusinessesSA />} />
+              <Route path="/super-admin/users" element={<UserManagement />} />
               <Route path="/super-admin/admins" element={<AdminManagement />} />
               <Route path="/super-admin/salesmen" element={<SalesmenManagement />} />
               <Route path="/super-admin/payments" element={<PaymentsSA />} />
               <Route path="/super-admin/categories" element={<CategoriesPage />} />
               <Route path="/super-admin/reports" element={<ReportsPage />} />
+              <Route path="/super-admin/leads" element={<LeadsPage />} />
+              <Route path="/super-admin/bookings" element={<BookingsPage />} />
               <Route path="/super-admin/settings" element={<SettingsPage />} />
             </Route>
 
@@ -64,6 +78,8 @@ const App = () => (
               <Route path="/admin/payments" element={<PaymentsSA />} />
               <Route path="/admin/categories" element={<CategoriesPage />} />
               <Route path="/admin/reports" element={<ReportsPage />} />
+              <Route path="/admin/leads" element={<LeadsPage />} />
+              <Route path="/admin/bookings" element={<BookingsPage />} />
             </Route>
 
             {/* Salesman Routes */}
