@@ -16,6 +16,7 @@ import AdminManagement from "@/pages/super-admin/AdminManagement";
 import SalesmenManagement from "@/pages/super-admin/SalesmenManagement";
 import UserManagement from "@/pages/super-admin/UserManagement";
 import PaymentsSA from "@/pages/super-admin/Payments";
+import PremiumRequests from "@/pages/super-admin/PremiumRequests";
 import SettingsPage from "@/pages/super-admin/Settings";
 
 // Admin pages
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/super-admin/admins" element={<AdminManagement />} />
               <Route path="/super-admin/salesmen" element={<SalesmenManagement />} />
               <Route path="/super-admin/payments" element={<PaymentsSA />} />
+              <Route path="/super-admin/premium-requests" element={<PremiumRequests />} />
               <Route path="/super-admin/categories" element={<CategoriesPage />} />
               <Route path="/super-admin/reports" element={<ReportsPage />} />
               <Route path="/super-admin/leads" element={<LeadsPage />} />
@@ -76,6 +78,7 @@ const App = () => (
               <Route path="/admin/approvals" element={<PendingApprovals />} />
               <Route path="/admin/businesses" element={<AllBusinessesSA />} />
               <Route path="/admin/payments" element={<PaymentsSA />} />
+              <Route path="/admin/premium-requests" element={<PremiumRequests />} />
               <Route path="/admin/categories" element={<CategoriesPage />} />
               <Route path="/admin/reports" element={<ReportsPage />} />
               <Route path="/admin/leads" element={<LeadsPage />} />

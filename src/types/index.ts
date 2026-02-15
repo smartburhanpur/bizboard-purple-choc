@@ -1,6 +1,9 @@
 // ===== Roles =====
 export type UserRole = 'super_admin' | 'admin' | 'salesman' | 'owner' | 'user';
 
+// ===== Business Type =====
+export type BusinessType = 'leads' | 'booking' | 'hybrid';
+
 // ===== Subscription =====
 export interface Subscription {
   status: 'active' | 'expired' | 'none';
@@ -17,6 +20,8 @@ export interface User {
   email: string;
   role: UserRole;
   status: 'active' | 'blocked';
+  city?: string;
+  categoryPreference?: string;
   subscription: Subscription;
   createdAt: string;
   updatedAt?: string;
@@ -44,12 +49,18 @@ export interface Business {
   address: string;
   city: string;
   listingType: 'normal' | 'premium';
+  businessType: BusinessType;
   approvalStatus: 'pending' | 'approved' | 'rejected';
   isPremium: boolean;
+  premiumSource?: 'subscription' | 'manual' | 'none';
+  premiumRequestStatus?: 'none' | 'premium_requested' | 'premium_approved' | 'premium_rejected';
   isVisible: boolean;
   paymentDetails: PaymentDetails;
   verification: Verification;
   rejectionReason?: string;
+  serviceArea?: string;
+  description?: string;
+  ownerId?: string;
   createdBy: string | User;
   createdAt: string;
   updatedAt?: string;
@@ -70,8 +81,10 @@ export interface Lead {
   phone: string;
   message: string;
   status: 'new' | 'contacted' | 'converted';
+  leadType?: 'lead' | 'booking' | 'hybrid';
   assignedTo: string | User;
   businessId?: string;
+  assignedBusinessId?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -138,6 +151,8 @@ export interface BusinessFilters extends PaginationParams {
   city?: string;
   isPremium?: boolean;
   createdBy?: string;
+  businessType?: string;
+  premiumRequestStatus?: string;
 }
 
 export interface UserFilters extends PaginationParams {
@@ -148,6 +163,7 @@ export interface UserFilters extends PaginationParams {
 export interface LeadFilters extends PaginationParams {
   status?: string;
   assignedTo?: string;
+  businessId?: string;
 }
 
 export interface BookingFilters extends PaginationParams {

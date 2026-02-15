@@ -10,6 +10,7 @@ import { useCreateUser } from '@/services/userService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, UserPlus, CheckCircle } from 'lucide-react';
+import type { BusinessType } from '@/types';
 
 export default function AddBusiness() {
   const { toast } = useToast();
@@ -17,31 +18,32 @@ export default function AddBusiness() {
   const [step, setStep] = useState<1 | 2>(1);
   const [ownerId, setOwnerId] = useState('');
 
-  // Step 1: Owner form
-  const [ownerData, setOwnerData] = useState({ name: '', mobile: '', email: '' });
+  // Step 1: Owner form (full backend fields)
+  const [ownerData, setOwnerData] = useState({
+    name: '', mobile: '', email: '', city: '', categoryPreference: '',
+    subscriptionStatus: 'none' as 'active' | 'expired' | 'none',
+    planType: '', startDate: '', expiryDate: '',
+  });
   const createOwnerMutation = useCreateUser();
 
   // Step 2: Business form
   const [businessData, setBusinessData] = useState({
-    businessName: '',
-    categoryId: '',
-    phone: '',
-    address: '',
-    city: '',
+    businessName: '', categoryId: '', phone: '', address: '', city: '',
     listingType: 'normal' as 'normal' | 'premium',
-    paymentDetails: {
-      amount: 0,
-      paymentMode: 'cash' as 'cash' | 'upi',
-      paymentNote: '',
-    },
+    businessType: 'leads' as BusinessType,
+    serviceArea: '', description: '',
+    paymentDetails: { amount: 0, paymentMode: 'cash' as 'cash' | 'upi', paymentNote: '' },
   });
   const createBusinessMutation = useCreateBusiness();
   const { data: categoriesData } = useCategories();
 
   const handleCreateOwner = async (e: React.FormEvent) => {
     e.preventDefault();
+    const subscription = ownerData.subscriptionStatus === 'active'
+      ? { status: 'active' as const, planType: ownerData.planType, startDate: ownerData.startDate, expiryDate: ownerData.expiryDate }
+      : { status: ownerData.subscriptionStatus as 'none' | 'expired' };
     createOwnerMutation.mutate(
-      { ...ownerData, role: 'owner' },
+      { name: ownerData.name, mobile: ownerData.mobile, email: ownerData.email, role: 'owner', city: ownerData.city, categoryPreference: ownerData.categoryPreference, subscription },
       {
         onSuccess: (newUser) => {
           toast({ title: 'Owner Created', description: `${newUser.name} has been created` });
@@ -57,23 +59,17 @@ export default function AddBusiness() {
     e.preventDefault();
     const payload = {
       ...businessData,
+      ownerId,
       createdBy: user?._id || 'usr_s1',
-      paymentDetails: {
-        ...businessData.paymentDetails,
-        paymentStatus: 'pending' as const,
-      },
+      paymentDetails: { ...businessData.paymentDetails, paymentStatus: 'pending' as const },
     };
     createBusinessMutation.mutate(payload, {
       onSuccess: () => {
         toast({ title: 'Business Submitted', description: 'The business has been submitted for review. Status: Pending' });
         setStep(1);
         setOwnerId('');
-        setOwnerData({ name: '', mobile: '', email: '' });
-        setBusinessData({
-          businessName: '', categoryId: '', phone: '', address: '', city: '',
-          listingType: 'normal',
-          paymentDetails: { amount: 0, paymentMode: 'cash', paymentNote: '' },
-        });
+        setOwnerData({ name: '', mobile: '', email: '', city: '', categoryPreference: '', subscriptionStatus: 'none', planType: '', startDate: '', expiryDate: '' });
+        setBusinessData({ businessName: '', categoryId: '', phone: '', address: '', city: '', listingType: 'normal', businessType: 'leads', serviceArea: '', description: '', paymentDetails: { amount: 0, paymentMode: 'cash', paymentNote: '' } });
       },
       onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed to create business', variant: 'destructive' }),
     });
@@ -107,7 +103,7 @@ export default function AddBusiness() {
             </div>
             <div>
               <h3 className="font-display font-semibold text-foreground">Step 1: Create Owner/User</h3>
-              <p className="text-xs text-muted-foreground">Create the business owner first (role auto = owner)</p>
+              <p className="text-xs text-muted-foreground">Create the business owner with full details (role auto = owner)</p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -123,7 +119,61 @@ export default function AddBusiness() {
               <Label>Email *</Label>
               <Input type="email" value={ownerData.email} onChange={e => setOwnerData(p => ({ ...p, email: e.target.value }))} required />
             </div>
+            <div className="space-y-2">
+              <Label>City</Label>
+              <Input value={ownerData.city} onChange={e => setOwnerData(p => ({ ...p, city: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Business Category Preference</Label>
+              <Select value={ownerData.categoryPreference} onValueChange={v => setOwnerData(p => ({ ...p, categoryPreference: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {categoriesData?.data?.map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
+          <div className="border-t border-border pt-5">
+            <h4 className="font-semibold text-foreground mb-4">Subscription Details</h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Subscription Status</Label>
+                <Select value={ownerData.subscriptionStatus} onValueChange={(v: 'active' | 'expired' | 'none') => setOwnerData(p => ({ ...p, subscriptionStatus: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Inactive</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {ownerData.subscriptionStatus === 'active' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Plan Type</Label>
+                    <Select value={ownerData.planType} onValueChange={v => setOwnerData(p => ({ ...p, planType: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="quarterly">Quarterly</SelectItem>
+                        <SelectItem value="yearly">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Start Date</Label>
+                    <Input type="date" value={ownerData.startDate} onChange={e => setOwnerData(p => ({ ...p, startDate: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Expiry Date</Label>
+                    <Input type="date" value={ownerData.expiryDate} onChange={e => setOwnerData(p => ({ ...p, expiryDate: e.target.value }))} />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
           <div className="flex justify-end pt-2">
             <Button type="submit" className="gradient-primary text-primary-foreground px-8" disabled={createOwnerMutation.isPending}>
               {createOwnerMutation.isPending ? 'Creating...' : 'Create Owner & Continue'}
@@ -157,6 +207,17 @@ export default function AddBusiness() {
               </Select>
             </div>
             <div className="space-y-2">
+              <Label>Business Type *</Label>
+              <Select value={businessData.businessType} onValueChange={(v: BusinessType) => setBusinessData(p => ({ ...p, businessType: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="leads">Leads Only</SelectItem>
+                  <SelectItem value="booking">Booking Only</SelectItem>
+                  <SelectItem value="hybrid">Hybrid (Leads + Booking)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>City *</Label>
               <Input value={businessData.city} onChange={e => setBusinessData(p => ({ ...p, city: e.target.value }))} required />
             </div>
@@ -167,6 +228,14 @@ export default function AddBusiness() {
             <div className="space-y-2 sm:col-span-2">
               <Label>Address *</Label>
               <Input value={businessData.address} onChange={e => setBusinessData(p => ({ ...p, address: e.target.value }))} required maxLength={200} />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Service Area</Label>
+              <Input value={businessData.serviceArea} onChange={e => setBusinessData(p => ({ ...p, serviceArea: e.target.value }))} placeholder="e.g. North Delhi, Central Delhi" maxLength={200} />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Description</Label>
+              <Textarea value={businessData.description} onChange={e => setBusinessData(p => ({ ...p, description: e.target.value }))} placeholder="Brief description of the business" maxLength={500} />
             </div>
           </div>
 

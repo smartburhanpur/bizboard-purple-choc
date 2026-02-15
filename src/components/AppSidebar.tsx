@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Building2, Users, UserCog, CreditCard, BarChart3,
   Tags, Settings, ClipboardCheck, FolderPlus, Briefcase, TrendingUp, Building,
-  MessageSquare, CalendarCheck, UsersRound
+  MessageSquare, CalendarCheck, UsersRound, Crown
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,6 +46,7 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
       label: 'Finance',
       items: [
         { title: 'Payments & Revenue', url: '/super-admin/payments', icon: CreditCard },
+        { title: 'Premium Requests', url: '/super-admin/premium-requests', icon: Crown },
         { title: 'Reports', url: '/super-admin/reports', icon: BarChart3 },
       ],
     },
@@ -76,6 +77,7 @@ const menusByRole: Record<UserRole, { label: string; items: NavItem[] }[]> = {
       label: 'Operations',
       items: [
         { title: 'Payment Verification', url: '/admin/payments', icon: CreditCard },
+        { title: 'Premium Requests', url: '/admin/premium-requests', icon: Crown },
         { title: 'Categories', url: '/admin/categories', icon: Tags },
         { title: 'Reports', url: '/admin/reports', icon: BarChart3 },
       ],

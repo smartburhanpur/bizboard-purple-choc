@@ -17,6 +17,8 @@ export const businessService = {
     if (params?.city) filtered = filtered.filter(b => b.city.toLowerCase().includes(params.city!.toLowerCase()));
     if (params?.isPremium !== undefined) filtered = filtered.filter(b => b.isPremium === params.isPremium);
     if (params?.createdBy) filtered = filtered.filter(b => b.createdBy === params.createdBy);
+    if (params?.businessType) filtered = filtered.filter(b => b.businessType === params.businessType);
+    if (params?.premiumRequestStatus) filtered = filtered.filter(b => b.premiumRequestStatus === params.premiumRequestStatus);
     if (params?.search) {
       const s = params.search.toLowerCase();
       filtered = filtered.filter(b => b.businessName.toLowerCase().includes(s) || b.city.toLowerCase().includes(s));
@@ -51,9 +53,15 @@ export const businessService = {
       address: payload.address || '',
       city: payload.city || '',
       listingType: payload.listingType || 'normal',
+      businessType: payload.businessType || 'leads',
       approvalStatus: 'pending',
       isPremium: false,
+      premiumSource: 'none',
+      premiumRequestStatus: 'none',
       isVisible: false,
+      serviceArea: payload.serviceArea || '',
+      description: payload.description || '',
+      ownerId: payload.ownerId,
       paymentDetails: {
         amount: payload.paymentDetails?.amount || 0,
         paymentMode: payload.paymentDetails?.paymentMode || 'cash',
@@ -105,13 +113,31 @@ export const businessService = {
 
   activatePremium: async (id: string): Promise<Business> => {
     await delay(400);
-    businesses = businesses.map(b => b._id === id ? { ...b, isPremium: true, listingType: 'premium' } : b);
+    businesses = businesses.map(b => b._id === id ? { ...b, isPremium: true, listingType: 'premium', premiumSource: 'manual', premiumRequestStatus: 'premium_approved' } : b);
     return businesses.find(b => b._id === id)!;
   },
 
   deactivatePremium: async (id: string): Promise<Business> => {
     await delay(400);
-    businesses = businesses.map(b => b._id === id ? { ...b, isPremium: false, listingType: 'normal' } : b);
+    businesses = businesses.map(b => b._id === id ? { ...b, isPremium: false, listingType: 'normal', premiumSource: 'none' } : b);
+    return businesses.find(b => b._id === id)!;
+  },
+
+  requestPremium: async (id: string): Promise<Business> => {
+    await delay(400);
+    businesses = businesses.map(b => b._id === id ? { ...b, premiumRequestStatus: 'premium_requested' } : b);
+    return businesses.find(b => b._id === id)!;
+  },
+
+  approvePremiumRequest: async (id: string): Promise<Business> => {
+    await delay(400);
+    businesses = businesses.map(b => b._id === id ? { ...b, premiumRequestStatus: 'premium_approved', isPremium: true, listingType: 'premium', premiumSource: 'manual' } : b);
+    return businesses.find(b => b._id === id)!;
+  },
+
+  rejectPremiumRequest: async (id: string): Promise<Business> => {
+    await delay(400);
+    businesses = businesses.map(b => b._id === id ? { ...b, premiumRequestStatus: 'premium_rejected' } : b);
     return businesses.find(b => b._id === id)!;
   },
 };
@@ -186,6 +212,30 @@ export function useActivatePremium() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => businessService.activatePremium(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['businesses'] }),
+  });
+}
+
+export function useRequestPremium() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => businessService.requestPremium(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['businesses'] }),
+  });
+}
+
+export function useApprovePremiumRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => businessService.approvePremiumRequest(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['businesses'] }),
+  });
+}
+
+export function useRejectPremiumRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => businessService.rejectPremiumRequest(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['businesses'] }),
   });
 }
