@@ -12,6 +12,7 @@ export const leadService = {
     let filtered = [...leads];
     if (params?.status) filtered = filtered.filter(l => l.status === params.status);
     if (params?.assignedTo) filtered = filtered.filter(l => l.assignedTo === params.assignedTo);
+    if (params?.businessId) filtered = filtered.filter(l => l.businessId === params.businessId);
     if (params?.search) {
       const s = params.search.toLowerCase();
       filtered = filtered.filter(l => l.customerName.toLowerCase().includes(s) || l.phone.includes(s) || l.message.toLowerCase().includes(s));
@@ -39,7 +40,9 @@ export const leadService = {
       phone: payload.phone || '',
       message: payload.message || '',
       status: 'new',
+      leadType: payload.leadType || 'lead',
       assignedTo: payload.assignedTo || '',
+      businessId: payload.businessId,
       createdAt: new Date().toISOString(),
     };
     leads = [newLead, ...leads];
@@ -50,6 +53,12 @@ export const leadService = {
     await delay(300);
     leads = leads.map(l => l._id === id ? { ...l, status, updatedAt: new Date().toISOString() } : l);
     return leads.find(l => l._id === id)!;
+  },
+
+  bulkAssign: async (leadIds: string[], assignedBusinessId: string): Promise<Lead[]> => {
+    await delay(500);
+    leads = leads.map(l => leadIds.includes(l._id) ? { ...l, assignedBusinessId, updatedAt: new Date().toISOString() } : l);
+    return leads.filter(l => leadIds.includes(l._id));
   },
 
   delete: async (id: string): Promise<void> => {
@@ -70,6 +79,15 @@ export function useUpdateLeadStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Lead['status'] }) => leadService.updateStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['leads'] }),
+  });
+}
+
+export function useBulkAssignLeads() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leadIds, assignedBusinessId }: { leadIds: string[]; assignedBusinessId: string }) =>
+      leadService.bulkAssign(leadIds, assignedBusinessId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['leads'] }),
   });
 }

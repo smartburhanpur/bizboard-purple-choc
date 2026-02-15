@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useBusinesses, useApproveBusiness, useRejectBusiness, useVerifyPayment, useToggleVisibility, useActivatePremium, useDeleteBusiness, useUpdateBusiness } from '@/services/businessService';
+import { useBusinesses, useApproveBusiness, useRejectBusiness, useVerifyPayment, useToggleVisibility, useActivatePremium, useDeleteBusiness, useUpdateBusiness, useRequestPremium } from '@/services/businessService';
 import { useCategories } from '@/services/categoryService';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
 import { DataTableHeader } from '@/components/DataTableHeader';
@@ -13,8 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Check, X, Trash2, Crown, EyeOff, Eye as EyeIcon, Pencil, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getUserName, getCategoryName } from '@/data/mockData';
-import type { BusinessFilters, Business } from '@/types';
+import { getUserName, getCategoryName, getUserById } from '@/data/mockData';
+import type { BusinessFilters, Business, BusinessType } from '@/types';
 
 export default function AllBusinessesPage() {
   const [search, setSearch] = useState('');
@@ -174,15 +174,17 @@ export default function AllBusinessesPage() {
                 <TableHead>Business</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>City</TableHead>
-                <TableHead>Type</TableHead>
+                <TableHead>Biz Type</TableHead>
+                <TableHead>Listing</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Payment</TableHead>
+                <TableHead>Premium</TableHead>
                 <TableHead>Created By</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? <TableSkeleton cols={8} /> : data?.data?.map((b) => (
+              {isLoading ? <TableSkeleton cols={10} /> : data?.data?.map((b) => (
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">
                     {b.businessName}
@@ -190,9 +192,13 @@ export default function AllBusinessesPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(b.categoryId)}</TableCell>
                   <TableCell className="text-muted-foreground">{b.city}</TableCell>
+                  <TableCell><StatusBadge status={b.businessType} /></TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
                   <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>
+                  <TableCell>
+                    {b.isPremium ? <span className="text-xs font-semibold text-premium">★ {b.premiumSource}</span> : b.premiumRequestStatus === 'premium_requested' ? <StatusBadge status="premium_requested" /> : '—'}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{getUserName(b.createdBy as string)}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
@@ -233,7 +239,7 @@ export default function AllBusinessesPage() {
                 </TableRow>
               ))}
               {!isLoading && (!data?.data || data.data.length === 0) && (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No businesses found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No businesses found</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

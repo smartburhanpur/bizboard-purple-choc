@@ -42,7 +42,9 @@ export const userService = {
       email: payload.email || '',
       role: payload.role || 'user',
       status: 'active',
-      subscription: { status: 'none' },
+      city: payload.city,
+      categoryPreference: payload.categoryPreference,
+      subscription: payload.subscription || { status: 'none' },
       createdAt: new Date().toISOString(),
     };
     users = [newUser, ...users];
