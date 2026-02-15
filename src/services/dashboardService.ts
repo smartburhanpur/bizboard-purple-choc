@@ -1,18 +1,20 @@
-import apiClient from '@/lib/apiClient';
-import type { DashboardStats, ApiResponse } from '@/types';
+import { calculateStats } from '@/data/mockData';
+import type { DashboardStats } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 
+const delay = (ms = 400) => new Promise(r => setTimeout(r, ms));
+
 export const dashboardService = {
-  getStats: async (role?: string): Promise<DashboardStats> => {
-    const { data } = await apiClient.get<ApiResponse<DashboardStats>>('/dashboard/stats', { params: { role } });
-    return data.data;
+  getStats: async (role?: string, userId?: string): Promise<DashboardStats> => {
+    await delay();
+    return calculateStats(role, userId);
   },
 };
 
-export function useDashboardStats(role?: string) {
+export function useDashboardStats(role?: string, userId?: string) {
   return useQuery({
-    queryKey: ['dashboard-stats', role],
-    queryFn: () => dashboardService.getStats(role),
-    refetchInterval: 30000, // refresh every 30s
+    queryKey: ['dashboard-stats', role, userId],
+    queryFn: () => dashboardService.getStats(role, userId),
+    refetchInterval: 30000,
   });
 }

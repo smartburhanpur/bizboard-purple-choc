@@ -8,7 +8,7 @@ import { StatsSkeleton, TableSkeleton } from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { User } from '@/types';
+import { getUserName, getCategoryName } from '@/data/mockData';
 
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats('admin');
@@ -54,8 +54,8 @@ export default function AdminDashboard() {
             {pendingLoading ? <TableSkeleton cols={6} /> : pendingData?.data?.map((b) => (
               <TableRow key={b._id}>
                 <TableCell className="font-medium">{b.businessName}</TableCell>
-                <TableCell className="text-muted-foreground">{b.categoryId}</TableCell>
-                <TableCell className="text-muted-foreground">{typeof b.createdBy === 'object' ? (b.createdBy as User).name : b.createdBy}</TableCell>
+                <TableCell className="text-muted-foreground">{getCategoryName(b.categoryId)}</TableCell>
+                <TableCell className="text-muted-foreground">{getUserName(b.createdBy as string)}</TableCell>
                 <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                 <TableCell>₹{b.paymentDetails.amount.toLocaleString()} ({b.paymentDetails.paymentMode.toUpperCase()})</TableCell>
                 <TableCell>
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
                       <Check className="h-3.5 w-3.5" /> Approve
                     </Button>
                     <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10 gap-1"
-                      onClick={() => rejectMutation.mutate({ id: b._id, rejectionReason: 'Rejected by admin' }, { onSuccess: () => toast({ title: 'Rejected', description: `${b.businessName} rejected` }) })}
+                      onClick={() => rejectMutation.mutate({ id: b._id, rejectionReason: 'Rejected by admin' }, { onSuccess: () => toast({ title: 'Rejected' }) })}
                       disabled={rejectMutation.isPending}>
                       <X className="h-3.5 w-3.5" /> Reject
                     </Button>

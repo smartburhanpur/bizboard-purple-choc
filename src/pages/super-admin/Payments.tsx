@@ -10,7 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { DataTableHeader } from '@/components/DataTableHeader';
 import { useDashboardStats } from '@/services/dashboardService';
-import type { User, BusinessFilters } from '@/types';
+import { getUserName } from '@/data/mockData';
+import type { BusinessFilters } from '@/types';
 
 export default function PaymentsPage() {
   const [search, setSearch] = useState('');
@@ -21,7 +22,6 @@ export default function PaymentsPage() {
   const { data, isLoading } = useBusinesses({ ...filters, search: search || undefined });
   const verifyMutation = useVerifyPayment();
 
-  // Filter businesses that have payment details
   const businesses = data?.data || [];
 
   return (
@@ -62,7 +62,7 @@ export default function PaymentsPage() {
               {isLoading ? <TableSkeleton cols={7} /> : businesses.map((b) => (
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
-                  <TableCell className="text-muted-foreground">{typeof b.createdBy === 'object' ? (b.createdBy as User).name : b.createdBy}</TableCell>
+                  <TableCell className="text-muted-foreground">{getUserName(b.createdBy as string)}</TableCell>
                   <TableCell className="font-semibold">₹{b.paymentDetails.amount.toLocaleString()}</TableCell>
                   <TableCell><Badge variant="secondary" className="uppercase text-xs">{b.paymentDetails.paymentMode}</Badge></TableCell>
                   <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>

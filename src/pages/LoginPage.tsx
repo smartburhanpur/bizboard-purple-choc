@@ -7,6 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Building2, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+const demoAccounts = [
+  { label: 'Super Admin', email: 'superadmin@nearmeb2b.city', password: 'admin123' },
+  { label: 'Admin', email: 'admin@nearmeb2b.city', password: 'admin123' },
+  { label: 'Salesman', email: 'salesman@nearmeb2b.city', password: 'admin123' },
+];
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +39,11 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDemoLogin = (demo: typeof demoAccounts[0]) => {
+    setEmail(demo.email);
+    setPassword(demo.password);
   };
 
   return (
@@ -111,6 +122,27 @@ export default function LoginPage() {
               ) : 'Sign In'}
             </Button>
           </form>
+
+          {/* Demo Credentials */}
+          <div className="mt-8 rounded-xl border border-border bg-muted/30 p-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Demo Accounts (click to fill)</p>
+            <div className="space-y-2">
+              {demoAccounts.map((demo) => (
+                <button
+                  key={demo.email}
+                  type="button"
+                  onClick={() => handleDemoLogin(demo)}
+                  className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-3 py-2.5 text-left transition-all hover:card-shadow-hover hover:border-primary/30"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{demo.label}</p>
+                    <p className="text-xs text-muted-foreground">{demo.email}</p>
+                  </div>
+                  <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">{demo.password}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

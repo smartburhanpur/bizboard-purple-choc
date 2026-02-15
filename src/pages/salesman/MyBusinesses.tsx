@@ -6,13 +6,17 @@ import { DataTableHeader } from '@/components/DataTableHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TableSkeleton } from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil } from 'lucide-react';
-import type { BusinessFilters } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Eye, Pencil, Info } from 'lucide-react';
+import { getCategoryName } from '@/data/mockData';
+import type { BusinessFilters, Business } from '@/types';
 
 export default function MyBusinesses() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<BusinessFilters>({ page: 1, limit: 20 });
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
 
   const { data, isLoading } = useBusinesses({
     ...filters,
@@ -26,6 +30,43 @@ export default function MyBusinesses() {
         <h1 className="font-display text-2xl font-bold text-foreground">My Businesses</h1>
         <p className="text-muted-foreground">View and manage businesses you've submitted</p>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Business Details</DialogTitle></DialogHeader>
+          {selectedBiz && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
+                <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(selectedBiz.categoryId)}</p></div>
+                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.city}</p></div>
+                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.phone}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address}</p></div>
+                <div><p className="text-muted-foreground">Listing Type</p><ListingTypeBadge type={selectedBiz.listingType} /></div>
+                <div><p className="text-muted-foreground">Approval Status</p><StatusBadge status={selectedBiz.approvalStatus} /></div>
+                <div><p className="text-muted-foreground">Premium</p><p className="font-medium">{selectedBiz.isPremium ? '★ Yes' : 'No'}</p></div>
+                <div><p className="text-muted-foreground">Visible</p><p className="font-medium">{selectedBiz.isVisible ? 'Yes' : 'No'}</p></div>
+              </div>
+              <div className="border-t pt-3">
+                <p className="font-semibold mb-2">Payment Details</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails.amount.toLocaleString()}</p></div>
+                  <div><p className="text-muted-foreground">Mode</p><p className="font-medium uppercase">{selectedBiz.paymentDetails.paymentMode}</p></div>
+                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails.paymentStatus} /></div>
+                  <div><p className="text-muted-foreground">Verification</p><StatusBadge status={selectedBiz.verification.status} /></div>
+                </div>
+              </div>
+              {selectedBiz.rejectionReason && (
+                <div className="border-t pt-3">
+                  <p className="text-muted-foreground">Rejection Reason</p>
+                  <p className="font-medium text-destructive">{selectedBiz.rejectionReason}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="rounded-xl border bg-card card-shadow">
         <div className="p-5 border-b border-border">
@@ -57,7 +98,7 @@ export default function MyBusinesses() {
               {isLoading ? <TableSkeleton cols={8} /> : data?.data?.map((b) => (
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
-                  <TableCell className="text-muted-foreground">{b.categoryId}</TableCell>
+                  <TableCell className="text-muted-foreground">{getCategoryName(b.categoryId)}</TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
                   <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>
@@ -65,10 +106,9 @@ export default function MyBusinesses() {
                   <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><Eye className="h-4 w-4" /></Button>
-                      {b.approvalStatus === 'pending' && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><Pencil className="h-4 w-4" /></Button>
-                      )}
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
+                        <Info className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

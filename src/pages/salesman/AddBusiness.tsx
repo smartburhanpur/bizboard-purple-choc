@@ -7,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCategories } from '@/services/categoryService';
 import { useCreateBusiness } from '@/services/businessService';
 import { useCreateUser } from '@/services/userService';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, UserPlus } from 'lucide-react';
+import { Building2, UserPlus, CheckCircle } from 'lucide-react';
 
 export default function AddBusiness() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [step, setStep] = useState<1 | 2>(1);
   const [ownerId, setOwnerId] = useState('');
 
@@ -41,9 +43,9 @@ export default function AddBusiness() {
     createOwnerMutation.mutate(
       { ...ownerData, role: 'owner' },
       {
-        onSuccess: (user) => {
-          toast({ title: 'Owner Created', description: `${user.name} has been created` });
-          setOwnerId(user._id);
+        onSuccess: (newUser) => {
+          toast({ title: 'Owner Created', description: `${newUser.name} has been created` });
+          setOwnerId(newUser._id);
           setStep(2);
         },
         onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed to create owner', variant: 'destructive' }),
@@ -55,6 +57,7 @@ export default function AddBusiness() {
     e.preventDefault();
     const payload = {
       ...businessData,
+      createdBy: user?._id || 'usr_s1',
       paymentDetails: {
         ...businessData.paymentDetails,
         paymentStatus: 'pending' as const,
@@ -83,6 +86,19 @@ export default function AddBusiness() {
         <p className="text-muted-foreground">Step {step} of 2 — {step === 1 ? 'Create Owner' : 'Business Details'}</p>
       </div>
 
+      {/* Step indicator */}
+      <div className="flex items-center gap-4">
+        <div className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium ${step >= 1 ? 'gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+          {step > 1 ? <CheckCircle className="h-4 w-4" /> : <span className="h-5 w-5 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs">1</span>}
+          Create Owner
+        </div>
+        <div className="h-px flex-1 bg-border" />
+        <div className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium ${step === 2 ? 'gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+          <span className="h-5 w-5 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs">2</span>
+          Add Business
+        </div>
+      </div>
+
       {step === 1 ? (
         <form onSubmit={handleCreateOwner} className="rounded-xl border bg-card card-shadow p-6 space-y-5">
           <div className="flex items-center gap-3 pb-4 border-b border-border">
@@ -91,7 +107,7 @@ export default function AddBusiness() {
             </div>
             <div>
               <h3 className="font-display font-semibold text-foreground">Step 1: Create Owner/User</h3>
-              <p className="text-xs text-muted-foreground">Create the business owner first</p>
+              <p className="text-xs text-muted-foreground">Create the business owner first (role auto = owner)</p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -122,7 +138,7 @@ export default function AddBusiness() {
             </div>
             <div>
               <h3 className="font-display font-semibold text-foreground">Step 2: Business Details</h3>
-              <p className="text-xs text-muted-foreground">Fill in the business information</p>
+              <p className="text-xs text-muted-foreground">createdBy = {user?.name} (auto) • approvalStatus = pending • isVisible = false</p>
             </div>
           </div>
 
