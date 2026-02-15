@@ -27,8 +27,8 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Payments & Revenue</h1>
-        <p className="text-muted-foreground">Track manual payments and revenue across the platform</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Payments & Revenue</h1>
+        <p className="text-sm text-muted-foreground">Track manual payments and revenue across the platform</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

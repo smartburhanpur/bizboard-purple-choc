@@ -35,8 +35,8 @@ export default function SalesmanPerformance() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">My Performance</h1>
-        <p className="text-muted-foreground">Track your field operations metrics</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">My Performance</h1>
+        <p className="text-sm text-muted-foreground">Track your field operations metrics</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -50,8 +50,8 @@ export default function SalesmanPerformance() {
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border bg-card card-shadow p-6">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border bg-card card-shadow p-4 sm:p-6">
           <h3 className="font-display font-semibold text-foreground mb-4">Approval Breakdown</h3>
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
@@ -67,7 +67,7 @@ export default function SalesmanPerformance() {
           )}
         </div>
 
-        <div className="rounded-xl border bg-card card-shadow p-6">
+        <div className="rounded-xl border bg-card card-shadow p-4 sm:p-6">
           <h3 className="font-display font-semibold text-foreground mb-4">Monthly Additions</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={monthlyData}>

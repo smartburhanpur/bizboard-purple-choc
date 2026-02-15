@@ -30,16 +30,18 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">System Settings</h1>
-        <p className="text-muted-foreground">Configure platform settings and preferences</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">System Settings</h1>
+        <p className="text-sm text-muted-foreground">Configure platform settings and preferences</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-muted">
-          <TabsTrigger value="general" className="gap-2"><Globe className="h-4 w-4" /> General</TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2"><Bell className="h-4 w-4" /> Notifications</TabsTrigger>
-          <TabsTrigger value="business" className="gap-2"><Shield className="h-4 w-4" /> Business Rules</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+          <TabsList className="bg-muted w-full sm:w-auto">
+            <TabsTrigger value="general" className="gap-2 text-xs sm:text-sm"><Globe className="h-4 w-4" /> <span className="hidden sm:inline">General</span></TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2 text-xs sm:text-sm"><Bell className="h-4 w-4" /> <span className="hidden sm:inline">Notifications</span></TabsTrigger>
+            <TabsTrigger value="business" className="gap-2 text-xs sm:text-sm"><Shield className="h-4 w-4" /> <span className="hidden sm:inline">Business Rules</span></TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="general">
           <div className="rounded-xl border bg-card card-shadow p-6 space-y-6">

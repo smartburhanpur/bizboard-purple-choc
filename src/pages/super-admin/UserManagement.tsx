@@ -51,10 +51,10 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">User Management</h1>
-          <p className="text-muted-foreground">Manage all users across the platform</p>
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">User Management</h1>
+          <p className="text-sm text-muted-foreground">Manage all users across the platform</p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>

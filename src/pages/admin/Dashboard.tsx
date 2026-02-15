@@ -20,8 +20,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Operations overview and pending approvals</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Admin Dashboard</h1>
+        <p className="text-sm text-muted-foreground">Operations overview and pending approvals</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -39,6 +39,7 @@ export default function AdminDashboard() {
         <div className="p-5 border-b border-border">
           <h3 className="font-display font-semibold text-foreground">Pending Approvals</h3>
         </div>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -59,16 +60,16 @@ export default function AdminDashboard() {
                 <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                 <TableCell>₹{b.paymentDetails.amount.toLocaleString()} ({b.paymentDetails.paymentMode.toUpperCase()})</TableCell>
                 <TableCell>
-                  <div className="flex justify-end gap-1">
+                  <div className="flex flex-wrap justify-end gap-1">
                     <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1"
                       onClick={() => approveMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Approved', description: `${b.businessName} approved` }) })}
                       disabled={approveMutation.isPending}>
-                      <Check className="h-3.5 w-3.5" /> Approve
+                      <Check className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Approve</span>
                     </Button>
                     <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10 gap-1"
                       onClick={() => rejectMutation.mutate({ id: b._id, rejectionReason: 'Rejected by admin' }, { onSuccess: () => toast({ title: 'Rejected' }) })}
                       disabled={rejectMutation.isPending}>
-                      <X className="h-3.5 w-3.5" /> Reject
+                      <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Reject</span>
                     </Button>
                   </div>
                 </TableCell>
@@ -79,6 +80,7 @@ export default function AdminDashboard() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

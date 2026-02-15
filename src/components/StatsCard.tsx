@@ -28,21 +28,21 @@ const iconVariants = {
 
 export function StatsCard({ title, value, icon: Icon, trend, variant = 'default' }: StatsCardProps) {
   return (
-    <div className={`rounded-xl border p-5 transition-all hover:card-shadow-hover animate-fade-in ${variantStyles[variant]}`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className={`text-sm font-medium ${variant === 'primary' || variant === 'premium' ? 'opacity-80' : 'text-muted-foreground'}`}>
+    <div className={`rounded-xl border p-3 sm:p-5 transition-all hover:card-shadow-hover animate-fade-in ${variantStyles[variant]}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className={`text-xs sm:text-sm font-medium truncate ${variant === 'primary' || variant === 'premium' ? 'opacity-80' : 'text-muted-foreground'}`}>
             {title}
           </p>
-          <p className="mt-2 text-3xl font-bold font-display">{value}</p>
+          <p className="mt-1 sm:mt-2 text-xl sm:text-3xl font-bold font-display truncate">{value}</p>
           {trend && (
             <p className={`mt-1 text-xs font-medium ${variant === 'primary' || variant === 'premium' ? 'opacity-70' : 'text-success'}`}>
               {trend}
             </p>
           )}
         </div>
-        <div className={`rounded-xl p-3 ${iconVariants[variant]}`}>
-          <Icon className="h-5 w-5" />
+        <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 shrink-0 ${iconVariants[variant]}`}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
       </div>
     </div>

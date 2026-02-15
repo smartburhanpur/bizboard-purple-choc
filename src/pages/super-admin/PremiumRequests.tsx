@@ -22,8 +22,8 @@ export default function PremiumRequestsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Premium Requests</h1>
-        <p className="text-muted-foreground">Approve or reject premium listing requests from salesmen</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Premium Requests</h1>
+        <p className="text-sm text-muted-foreground">Approve or reject premium listing requests from salesmen</p>
       </div>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
@@ -85,19 +85,19 @@ export default function PremiumRequestsPage() {
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
                   <TableCell className="font-semibold">₹{b.paymentDetails.amount.toLocaleString()}</TableCell>
                   <TableCell>
-                    <div className="flex justify-end gap-1">
+                    <div className="flex flex-wrap justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
                         <Info className="h-4 w-4" />
                       </Button>
                       <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1"
                         onClick={() => approveMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Premium Approved' }) })}
                         disabled={approveMutation.isPending}>
-                        <Check className="h-3.5 w-3.5" /> Approve
+                        <Check className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Approve</span>
                       </Button>
                       <Button size="sm" variant="outline" className="text-destructive border-destructive/30 gap-1"
                         onClick={() => rejectMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Premium Rejected' }) })}
                         disabled={rejectMutation.isPending}>
-                        <X className="h-3.5 w-3.5" /> Reject
+                        <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Reject</span>
                       </Button>
                     </div>
                   </TableCell>
