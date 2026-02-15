@@ -35,7 +35,7 @@ export default function PremiumRequestsPage() {
                 <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
                 <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(selectedBiz.categoryId)}</p></div>
                 <div><p className="text-muted-foreground">Business Type</p><StatusBadge status={selectedBiz.businessType} /></div>
-                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.city}</p></div>
+                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
                 <div><p className="text-muted-foreground">Created By</p><p className="font-medium">{getUserName(selectedBiz.createdBy as string)}</p></div>
                 <div><p className="text-muted-foreground">Approval Status</p><StatusBadge status={selectedBiz.approvalStatus} /></div>
                 {selectedBiz.ownerId && (() => {
@@ -79,7 +79,7 @@ export default function PremiumRequestsPage() {
                 <TableRow key={b._id}>
                   <TableCell className="font-medium">{b.businessName}</TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(b.categoryId)}</TableCell>
-                  <TableCell className="text-muted-foreground">{b.city}</TableCell>
+                  <TableCell className="text-muted-foreground">{b.address.city}</TableCell>
                   <TableCell><StatusBadge status={b.businessType} /></TableCell>
                   <TableCell className="text-muted-foreground">{getUserName(b.createdBy as string)}</TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>

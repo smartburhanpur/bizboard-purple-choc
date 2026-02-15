@@ -17,14 +17,29 @@ export interface User {
   _id: string;
   name: string;
   mobile: string;
-  email: string;
+  email?: string;
   role: UserRole;
-  status: 'active' | 'blocked';
+  status: 'active' | 'blocked' | 'inactive';
   city?: string;
   categoryPreference?: string;
   subscription: Subscription;
+  acceptTerms?: boolean;
   createdAt: string;
   updatedAt?: string;
+}
+
+// ===== Contact Numbers (nested in Business) =====
+export interface ContactNumbers {
+  primary: string;
+  whatsapp?: string;
+}
+
+// ===== Address (nested in Business) =====
+export interface BusinessAddress {
+  street: string;
+  city: string;
+  state: string;
+  pincode: string;
 }
 
 // ===== Payment Details (nested in Business) =====
@@ -33,11 +48,13 @@ export interface PaymentDetails {
   paymentMode: 'cash' | 'upi';
   paymentStatus: 'pending' | 'verified';
   paymentNote?: string;
+  paymentDate?: string;
 }
 
 // ===== Verification (nested in Business) =====
 export interface Verification {
-  status: 'pending' | 'verified' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected';
+  verifiedAt?: string;
 }
 
 // ===== Business =====
@@ -45,21 +62,26 @@ export interface Business {
   _id: string;
   businessName: string;
   categoryId: string;
-  phone: string;
-  address: string;
-  city: string;
+  contactNumbers: ContactNumbers;
+  address: BusinessAddress;
   listingType: 'normal' | 'premium';
   businessType: BusinessType;
   approvalStatus: 'pending' | 'approved' | 'rejected';
   isPremium: boolean;
-  premiumSource?: 'subscription' | 'manual' | 'none';
-  premiumRequestStatus?: 'none' | 'premium_requested' | 'premium_approved' | 'premium_rejected';
+  isActive: boolean;
   isVisible: boolean;
+  premiumSource?: 'subscription' | 'manual' | 'none';
+  premiumExpiry?: string;
+  premiumRequestStatus?: 'none' | 'premium_requested' | 'premium_approved' | 'premium_rejected';
   paymentDetails: PaymentDetails;
   verification: Verification;
   rejectionReason?: string;
   serviceArea?: string;
   description?: string;
+  openingTime?: string;
+  closingTime?: string;
+  logo?: string;
+  avgRating?: number;
   ownerId?: string;
   createdBy: string | User;
   createdAt: string;
@@ -70,6 +92,9 @@ export interface Business {
 export interface Category {
   _id: string;
   name: string;
+  section?: string;
+  isActive?: boolean;
+  iconKey?: string;
   businessCount?: number;
   createdAt?: string;
 }
@@ -115,6 +140,9 @@ export interface DashboardStats {
   verifiedPayments: number;
   totalLeads?: number;
   totalBookings?: number;
+  totalUsers?: number;
+  activeSubscriptions?: number;
+  conversionRate?: number;
 }
 
 // ===== API Response Wrappers =====

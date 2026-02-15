@@ -5,7 +5,7 @@ import { authService } from '@/services/authService';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (mobile: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -16,13 +16,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('nearmeb2b_token');
+    const token = localStorage.getItem('smartburhanpur_token');
     if (token) {
       authService.getMe()
         .then((u) => setUser(u))
         .catch(() => {
-          localStorage.removeItem('nearmeb2b_token');
-          localStorage.removeItem('nearmeb2b_user');
+          localStorage.removeItem('smartburhanpur_token');
+          localStorage.removeItem('smartburhanpur_user');
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -30,17 +30,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { token, user: loggedInUser } = await authService.login({ email, password });
-    localStorage.setItem('nearmeb2b_token', token);
-    localStorage.setItem('nearmeb2b_user', JSON.stringify(loggedInUser));
+  const login = useCallback(async (mobile: string, password: string) => {
+    const { token, user: loggedInUser } = await authService.login({ mobile, password });
+    localStorage.setItem('smartburhanpur_token', token);
+    localStorage.setItem('smartburhanpur_user', JSON.stringify(loggedInUser));
     setUser(loggedInUser);
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem('nearmeb2b_token');
-    localStorage.removeItem('nearmeb2b_user');
+    localStorage.removeItem('smartburhanpur_token');
+    localStorage.removeItem('smartburhanpur_user');
   }, []);
 
   return (

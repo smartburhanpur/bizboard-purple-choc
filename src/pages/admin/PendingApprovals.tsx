@@ -29,7 +29,6 @@ export default function PendingApprovals() {
         <p className="text-sm text-muted-foreground">Review and approve business listing requests</p>
       </div>
 
-      {/* Detail Modal */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Pending Business Details</DialogTitle></DialogHeader>
@@ -38,9 +37,9 @@ export default function PendingApprovals() {
               <div className="grid grid-cols-2 gap-3">
                 <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
                 <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(selectedBiz.categoryId)}</p></div>
-                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.city}</p></div>
-                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.phone}</p></div>
-                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address}</p></div>
+                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
+                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.contactNumbers.primary}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address.street}, {selectedBiz.address.city}, {selectedBiz.address.state} - {selectedBiz.address.pincode}</p></div>
                 <div><p className="text-muted-foreground">Created By (Salesman)</p><p className="font-medium">{getUserName(selectedBiz.createdBy as string)}</p></div>
                 <div><p className="text-muted-foreground">Listing Type</p><ListingTypeBadge type={selectedBiz.listingType} /></div>
               </div>

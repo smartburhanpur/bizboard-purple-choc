@@ -68,9 +68,9 @@ export default function MyBusinesses() {
                 <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
                 <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(selectedBiz.categoryId)}</p></div>
                 <div><p className="text-muted-foreground">Business Type</p><StatusBadge status={selectedBiz.businessType} /></div>
-                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.city}</p></div>
-                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.phone}</p></div>
-                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address}</p></div>
+                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
+                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.contactNumbers.primary}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address.street}, {selectedBiz.address.city}, {selectedBiz.address.state} - {selectedBiz.address.pincode}</p></div>
                 {selectedBiz.serviceArea && <div className="col-span-2"><p className="text-muted-foreground">Service Area</p><p className="font-medium">{selectedBiz.serviceArea}</p></div>}
                 {selectedBiz.description && <div className="col-span-2"><p className="text-muted-foreground">Description</p><p className="font-medium">{selectedBiz.description}</p></div>}
                 <div><p className="text-muted-foreground">Listing Type</p><ListingTypeBadge type={selectedBiz.listingType} /></div>

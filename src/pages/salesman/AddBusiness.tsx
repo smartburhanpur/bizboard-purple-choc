@@ -26,9 +26,11 @@ export default function AddBusiness() {
   });
   const createOwnerMutation = useCreateUser();
 
-  // Step 2: Business form
+  // Step 2: Business form (backend-accurate nested fields)
   const [businessData, setBusinessData] = useState({
-    businessName: '', categoryId: '', phone: '', address: '', city: '',
+    businessName: '', categoryId: '',
+    contactNumbers: { primary: '', whatsapp: '' },
+    address: { street: '', city: 'Burhanpur', state: 'Madhya Pradesh', pincode: '450331' },
     listingType: 'normal' as 'normal' | 'premium',
     businessType: 'leads' as BusinessType,
     serviceArea: '', description: '',
@@ -43,7 +45,7 @@ export default function AddBusiness() {
       ? { status: 'active' as const, planType: ownerData.planType, startDate: ownerData.startDate, expiryDate: ownerData.expiryDate }
       : { status: ownerData.subscriptionStatus as 'none' | 'expired' };
     createOwnerMutation.mutate(
-      { name: ownerData.name, mobile: ownerData.mobile, email: ownerData.email, role: 'owner', city: ownerData.city, categoryPreference: ownerData.categoryPreference, subscription },
+      { name: ownerData.name, mobile: ownerData.mobile, email: ownerData.email, role: 'owner', city: ownerData.city, categoryPreference: ownerData.categoryPreference, subscription, acceptTerms: true },
       {
         onSuccess: (newUser) => {
           toast({ title: 'Owner Created', description: `${newUser.name} has been created` });
@@ -61,7 +63,7 @@ export default function AddBusiness() {
       ...businessData,
       ownerId,
       createdBy: user?._id || 'usr_s1',
-      paymentDetails: { ...businessData.paymentDetails, paymentStatus: 'pending' as const },
+      paymentDetails: { ...businessData.paymentDetails, paymentStatus: 'pending' as const, paymentDate: new Date().toISOString() },
     };
     createBusinessMutation.mutate(payload, {
       onSuccess: () => {
@@ -69,7 +71,13 @@ export default function AddBusiness() {
         setStep(1);
         setOwnerId('');
         setOwnerData({ name: '', mobile: '', email: '', city: '', categoryPreference: '', subscriptionStatus: 'none', planType: '', startDate: '', expiryDate: '' });
-        setBusinessData({ businessName: '', categoryId: '', phone: '', address: '', city: '', listingType: 'normal', businessType: 'leads', serviceArea: '', description: '', paymentDetails: { amount: 0, paymentMode: 'cash', paymentNote: '' } });
+        setBusinessData({
+          businessName: '', categoryId: '',
+          contactNumbers: { primary: '', whatsapp: '' },
+          address: { street: '', city: 'Burhanpur', state: 'Madhya Pradesh', pincode: '450331' },
+          listingType: 'normal', businessType: 'leads', serviceArea: '', description: '',
+          paymentDetails: { amount: 0, paymentMode: 'cash', paymentNote: '' },
+        });
       },
       onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed to create business', variant: 'destructive' }),
     });
@@ -103,25 +111,25 @@ export default function AddBusiness() {
             </div>
             <div>
               <h3 className="font-display font-semibold text-foreground">Step 1: Create Owner/User</h3>
-              <p className="text-xs text-muted-foreground">Create the business owner with full details (role auto = owner)</p>
+              <p className="text-xs text-muted-foreground">Create the business owner with full profile (role auto = owner)</p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
               <Label>Name *</Label>
-              <Input value={ownerData.name} onChange={e => setOwnerData(p => ({ ...p, name: e.target.value }))} required />
+              <Input value={ownerData.name} onChange={e => setOwnerData(p => ({ ...p, name: e.target.value }))} required maxLength={100} />
             </div>
             <div className="space-y-2">
               <Label>Mobile *</Label>
-              <Input value={ownerData.mobile} onChange={e => setOwnerData(p => ({ ...p, mobile: e.target.value }))} required />
+              <Input type="tel" value={ownerData.mobile} onChange={e => setOwnerData(p => ({ ...p, mobile: e.target.value }))} required maxLength={10} placeholder="10 digit mobile" />
             </div>
             <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input type="email" value={ownerData.email} onChange={e => setOwnerData(p => ({ ...p, email: e.target.value }))} required />
+              <Label>Email</Label>
+              <Input type="email" value={ownerData.email} onChange={e => setOwnerData(p => ({ ...p, email: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <Label>City</Label>
-              <Input value={ownerData.city} onChange={e => setOwnerData(p => ({ ...p, city: e.target.value }))} />
+              <Input value={ownerData.city} onChange={e => setOwnerData(p => ({ ...p, city: e.target.value }))} placeholder="e.g. Burhanpur" />
             </div>
             <div className="space-y-2">
               <Label>Business Category Preference</Label>
@@ -217,28 +225,61 @@ export default function AddBusiness() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>City *</Label>
-              <Input value={businessData.city} onChange={e => setBusinessData(p => ({ ...p, city: e.target.value }))} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone *</Label>
-              <Input value={businessData.phone} onChange={e => setBusinessData(p => ({ ...p, phone: e.target.value }))} required maxLength={15} />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label>Address *</Label>
-              <Input value={businessData.address} onChange={e => setBusinessData(p => ({ ...p, address: e.target.value }))} required maxLength={200} />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label>Service Area</Label>
-              <Input value={businessData.serviceArea} onChange={e => setBusinessData(p => ({ ...p, serviceArea: e.target.value }))} placeholder="e.g. North Delhi, Central Delhi" maxLength={200} />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label>Description</Label>
-              <Textarea value={businessData.description} onChange={e => setBusinessData(p => ({ ...p, description: e.target.value }))} placeholder="Brief description of the business" maxLength={500} />
+          </div>
+
+          {/* Contact Numbers */}
+          <div className="border-t border-border pt-5">
+            <h4 className="font-semibold text-foreground mb-4">Contact Numbers</h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Primary Phone *</Label>
+                <Input type="tel" value={businessData.contactNumbers.primary} onChange={e => setBusinessData(p => ({ ...p, contactNumbers: { ...p.contactNumbers, primary: e.target.value } }))} required maxLength={10} />
+              </div>
+              <div className="space-y-2">
+                <Label>WhatsApp</Label>
+                <Input type="tel" value={businessData.contactNumbers.whatsapp} onChange={e => setBusinessData(p => ({ ...p, contactNumbers: { ...p.contactNumbers, whatsapp: e.target.value } }))} maxLength={10} />
+              </div>
             </div>
           </div>
 
+          {/* Address */}
+          <div className="border-t border-border pt-5">
+            <h4 className="font-semibold text-foreground mb-4">Address</h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Street *</Label>
+                <Input value={businessData.address.street} onChange={e => setBusinessData(p => ({ ...p, address: { ...p.address, street: e.target.value } }))} required maxLength={200} />
+              </div>
+              <div className="space-y-2">
+                <Label>City *</Label>
+                <Input value={businessData.address.city} onChange={e => setBusinessData(p => ({ ...p, address: { ...p.address, city: e.target.value } }))} required />
+              </div>
+              <div className="space-y-2">
+                <Label>State *</Label>
+                <Input value={businessData.address.state} onChange={e => setBusinessData(p => ({ ...p, address: { ...p.address, state: e.target.value } }))} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Pincode *</Label>
+                <Input value={businessData.address.pincode} onChange={e => setBusinessData(p => ({ ...p, address: { ...p.address, pincode: e.target.value } }))} required maxLength={6} />
+              </div>
+            </div>
+          </div>
+
+          {/* Extra details */}
+          <div className="border-t border-border pt-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Service Area</Label>
+                <Input value={businessData.serviceArea} onChange={e => setBusinessData(p => ({ ...p, serviceArea: e.target.value }))} placeholder="e.g. Burhanpur City" maxLength={200} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Description</Label>
+                <Textarea value={businessData.description} onChange={e => setBusinessData(p => ({ ...p, description: e.target.value }))} placeholder="Brief description of the business" maxLength={500} />
+              </div>
+            </div>
+          </div>
+
+          {/* Listing & Payment */}
           <div className="border-t border-border pt-5">
             <h4 className="font-semibold text-foreground mb-4">Listing & Payment</h4>
             <div className="grid gap-4 sm:grid-cols-2">

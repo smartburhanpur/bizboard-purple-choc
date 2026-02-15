@@ -90,7 +90,7 @@ export default function LeadsPage() {
                 <SelectTrigger><SelectValue placeholder="Choose a business" /></SelectTrigger>
                 <SelectContent>
                   {approvedBusinesses.map(b => (
-                    <SelectItem key={b._id} value={b._id}>{b.businessName} — {b.city}</SelectItem>
+                    <SelectItem key={b._id} value={b._id}>{b.businessName} — {b.address.city}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -99,7 +99,7 @@ export default function LeadsPage() {
               <div className="rounded-lg border bg-muted/30 p-3 text-sm space-y-1">
                 <p><span className="text-muted-foreground">Category:</span> <span className="font-medium">{getCategoryName(selectedBiz.categoryId)}</span></p>
                 <p><span className="text-muted-foreground">Business Type:</span> <StatusBadge status={selectedBiz.businessType} /></p>
-                <p><span className="text-muted-foreground">City:</span> <span className="font-medium">{selectedBiz.city}</span></p>
+                <p><span className="text-muted-foreground">City:</span> <span className="font-medium">{selectedBiz.address.city}</span></p>
               </div>
             )}
             <Button className="w-full gradient-primary text-primary-foreground" onClick={handleBulkAssign}

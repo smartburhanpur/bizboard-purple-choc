@@ -8,13 +8,13 @@ import { Building2, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const demoAccounts = [
-  { label: 'Super Admin', email: 'superadmin@nearmeb2b.city', password: 'admin123' },
-  { label: 'Admin', email: 'admin@nearmeb2b.city', password: 'admin123' },
-  { label: 'Salesman', email: 'salesman@nearmeb2b.city', password: 'admin123' },
+  { label: 'Super Admin', mobile: '9876543210', password: 'admin123' },
+  { label: 'Admin', mobile: '9876543211', password: 'admin123' },
+  { label: 'Salesman', mobile: '9876543212', password: 'admin123' },
 ];
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,11 +24,11 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) return;
+    if (!mobile.trim() || !password.trim()) return;
     setLoading(true);
     try {
-      await login(email, password);
-      const stored = localStorage.getItem('nearmeb2b_user');
+      await login(mobile, password);
+      const stored = localStorage.getItem('smartburhanpur_user');
       if (stored) {
         const user = JSON.parse(stored);
         navigate(getRolePath(user.role), { replace: true });
@@ -42,7 +42,7 @@ export default function LoginPage() {
   };
 
   const handleDemoLogin = (demo: typeof demoAccounts[0]) => {
-    setEmail(demo.email);
+    setMobile(demo.mobile);
     setPassword(demo.password);
   };
 
@@ -55,7 +55,7 @@ export default function LoginPage() {
             <Building2 className="h-10 w-10 text-primary-foreground" />
           </div>
           <h1 className="mb-4 font-display text-4xl font-bold text-primary-foreground">
-            nearmeb2b.city
+            SmartBurhanpur City
           </h1>
           <p className="text-lg text-primary-foreground/80">
             City-based B2B business directory platform. Manage listings, payments, and approvals from one powerful dashboard.
@@ -70,24 +70,25 @@ export default function LoginPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-primary">
               <Building2 className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="font-display text-2xl font-bold text-foreground">nearmeb2b.city</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">SmartBurhanpur</h1>
           </div>
 
           <div className="mb-8">
             <h2 className="font-display text-2xl font-bold text-foreground">Welcome back</h2>
-            <p className="mt-1 text-muted-foreground">Sign in to your admin dashboard</p>
+            <p className="mt-1 text-muted-foreground">Sign in with your mobile number</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="mobile">Mobile Number</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="you@nearmeb2b.city"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="mobile"
+                type="tel"
+                placeholder="Enter your mobile number"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
                 className="h-12"
+                maxLength={10}
                 required
               />
             </div>
@@ -101,6 +102,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-12 pr-12"
+                  minLength={8}
                   required
                 />
                 <button
@@ -129,14 +131,14 @@ export default function LoginPage() {
             <div className="space-y-2">
               {demoAccounts.map((demo) => (
                 <button
-                  key={demo.email}
+                  key={demo.mobile}
                   type="button"
                   onClick={() => handleDemoLogin(demo)}
                   className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-3 py-2.5 text-left transition-all hover:card-shadow-hover hover:border-primary/30"
                 >
                   <div>
                     <p className="text-sm font-medium text-foreground">{demo.label}</p>
-                    <p className="text-xs text-muted-foreground">{demo.email}</p>
+                    <p className="text-xs text-muted-foreground">📱 {demo.mobile}</p>
                   </div>
                   <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">{demo.password}</span>
                 </button>

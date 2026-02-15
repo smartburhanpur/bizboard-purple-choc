@@ -36,15 +36,11 @@ export default function AllBusinessesPage() {
   const updateMutation = useUpdateBusiness();
 
   const handleApprove = (id: string, name: string) => {
-    approveMutation.mutate(id, {
-      onSuccess: () => toast({ title: 'Approved', description: `${name} has been approved` }),
-    });
+    approveMutation.mutate(id, { onSuccess: () => toast({ title: 'Approved', description: `${name} has been approved` }) });
   };
 
   const handleReject = (id: string, name: string) => {
-    rejectMutation.mutate({ id, rejectionReason: 'Rejected by admin' }, {
-      onSuccess: () => toast({ title: 'Rejected', description: `${name} has been rejected` }),
-    });
+    rejectMutation.mutate({ id, rejectionReason: 'Rejected by admin' }, { onSuccess: () => toast({ title: 'Rejected', description: `${name} has been rejected` }) });
   };
 
   const openEdit = (b: Business) => {
@@ -79,9 +75,9 @@ export default function AllBusinessesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
                 <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(selectedBiz.categoryId)}</p></div>
-                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.phone}</p></div>
-                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.city}</p></div>
-                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address}</p></div>
+                <div><p className="text-muted-foreground">Primary Phone</p><p className="font-medium">{selectedBiz.contactNumbers.primary}</p></div>
+                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.address.city}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address.street}, {selectedBiz.address.city}, {selectedBiz.address.state} - {selectedBiz.address.pincode}</p></div>
                 <div><p className="text-muted-foreground">Listing Type</p><ListingTypeBadge type={selectedBiz.listingType} /></div>
                 <div><p className="text-muted-foreground">Approval Status</p><StatusBadge status={selectedBiz.approvalStatus} /></div>
                 <div><p className="text-muted-foreground">Premium</p><p className="font-medium">{selectedBiz.isPremium ? '★ Yes' : 'No'}</p></div>
@@ -130,10 +126,10 @@ export default function AllBusinessesPage() {
                   <SelectContent>{categoryOptions.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2"><Label>City</Label><Input value={editForm.city || ''} onChange={e => setEditForm(p => ({ ...p, city: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>City</Label><Input value={editForm.address?.city || ''} onChange={e => setEditForm(p => ({ ...p, address: { ...p.address!, city: e.target.value } }))} /></div>
             </div>
-            <div className="space-y-2"><Label>Phone</Label><Input value={editForm.phone || ''} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} /></div>
-            <div className="space-y-2"><Label>Address</Label><Input value={editForm.address || ''} onChange={e => setEditForm(p => ({ ...p, address: e.target.value }))} /></div>
+            <div className="space-y-2"><Label>Primary Phone</Label><Input value={editForm.contactNumbers?.primary || ''} onChange={e => setEditForm(p => ({ ...p, contactNumbers: { ...p.contactNumbers!, primary: e.target.value } }))} /></div>
+            <div className="space-y-2"><Label>Street</Label><Input value={editForm.address?.street || ''} onChange={e => setEditForm(p => ({ ...p, address: { ...p.address!, street: e.target.value } }))} /></div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Listing Type</Label>
@@ -191,7 +187,7 @@ export default function AllBusinessesPage() {
                     {b.isPremium && <span className="ml-2 text-xs text-premium">★</span>}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{getCategoryName(b.categoryId)}</TableCell>
-                  <TableCell className="text-muted-foreground">{b.city}</TableCell>
+                  <TableCell className="text-muted-foreground">{b.address.city}</TableCell>
                   <TableCell><StatusBadge status={b.businessType} /></TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
@@ -246,9 +242,7 @@ export default function AllBusinessesPage() {
         </div>
         {data?.pagination && data.pagination.totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t border-border">
-            <p className="text-sm text-muted-foreground">
-              Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} total)
-            </p>
+            <p className="text-sm text-muted-foreground">Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} total)</p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled={data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
               <Button variant="outline" size="sm" disabled={data.pagination.page >= data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>

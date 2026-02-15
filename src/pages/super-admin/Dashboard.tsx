@@ -53,7 +53,7 @@ export default function SuperAdminDashboard() {
             {businessesLoading ? <TableSkeleton cols={6} /> : businessesData?.data?.map((b) => (
               <TableRow key={b._id}>
                 <TableCell className="font-medium">{b.businessName}</TableCell>
-                <TableCell>{b.city}</TableCell>
+                <TableCell>{b.address.city}</TableCell>
                 <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                 <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
                 <TableCell className="text-muted-foreground">{getUserName(b.createdBy as string)}</TableCell>
