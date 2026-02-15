@@ -28,7 +28,7 @@ export default function ReportsPage() {
 
   // Revenue by city
   const cityRevenue: Record<string, number> = {};
-  businesses.forEach(b => { cityRevenue[b.city] = (cityRevenue[b.city] || 0) + b.paymentDetails.amount; });
+  businesses.forEach(b => { cityRevenue[b.address.city] = (cityRevenue[b.address.city] || 0) + b.paymentDetails.amount; });
   const cityData = Object.entries(cityRevenue).map(([city, amount]) => ({ city, amount })).sort((a, b) => b.amount - a.amount);
 
   // Lead status

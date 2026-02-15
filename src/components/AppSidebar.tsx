@@ -119,8 +119,8 @@ export function AppSidebar() {
             <Building className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate font-display text-base font-bold text-sidebar-foreground">nearmeb2b</h1>
-            <p className="text-xs text-sidebar-muted">.city</p>
+            <h1 className="truncate font-display text-base font-bold text-sidebar-foreground">SmartBurhanpur</h1>
+            <p className="text-xs text-sidebar-muted">City</p>
           </div>
         </div>
       </SidebarHeader>
