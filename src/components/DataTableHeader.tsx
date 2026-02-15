@@ -12,7 +12,7 @@ interface DataTableHeaderProps {
 export function DataTableHeader({ searchValue, onSearchChange, searchPlaceholder = 'Search...', filters }: DataTableHeaderProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="relative max-w-sm flex-1">
+      <div className="relative w-full sm:max-w-sm flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={searchPlaceholder}
@@ -25,7 +25,7 @@ export function DataTableHeader({ searchValue, onSearchChange, searchPlaceholder
         <div className="flex flex-wrap gap-2">
           {filters.map((f) => (
             <Select key={f.key} value={f.value} onValueChange={f.onChange}>
-              <SelectTrigger className="w-[140px] h-10">
+              <SelectTrigger className="w-full sm:w-[140px] h-10">
                 <SelectValue placeholder={f.label} />
               </SelectTrigger>
               <SelectContent>

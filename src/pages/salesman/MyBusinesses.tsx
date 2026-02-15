@@ -54,8 +54,8 @@ export default function MyBusinesses() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">My Businesses</h1>
-        <p className="text-muted-foreground">View and manage businesses you've submitted</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">My Businesses</h1>
+        <p className="text-sm text-muted-foreground">View and manage businesses you've submitted</p>
       </div>
 
       {/* Detail Modal */}

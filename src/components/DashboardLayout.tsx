@@ -17,11 +17,11 @@ export default function DashboardLayout() {
         <AppSidebar />
         <div className="flex flex-1 flex-col">
           {/* Top bar */}
-          <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 md:px-6">
-            <div className="flex items-center gap-3">
+          <header className="sticky top-0 z-30 flex h-14 sm:h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-3 sm:px-4 md:px-6">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <SidebarTrigger />
-              <div className="hidden sm:block">
-                <h2 className="text-sm font-semibold text-foreground">{user.name}</h2>
+              <div className="hidden sm:block min-w-0">
+                <h2 className="text-sm font-semibold text-foreground truncate">{user.name}</h2>
                 <Badge variant="secondary" className="text-xs">{getRoleLabel(user.role)}</Badge>
               </div>
             </div>
@@ -37,7 +37,7 @@ export default function DashboardLayout() {
             </div>
           </header>
           {/* Page content */}
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
+          <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">
             <Outlet />
           </main>
         </div>

@@ -76,22 +76,22 @@ export default function AddBusiness() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Add New Business</h1>
-        <p className="text-muted-foreground">Step {step} of 2 — {step === 1 ? 'Create Owner' : 'Business Details'}</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Add New Business</h1>
+        <p className="text-sm text-muted-foreground">Step {step} of 2 — {step === 1 ? 'Create Owner' : 'Business Details'}</p>
       </div>
 
       {/* Step indicator */}
-      <div className="flex items-center gap-4">
-        <div className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium ${step >= 1 ? 'gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+      <div className="flex items-center gap-2 sm:gap-4">
+        <div className={`flex items-center gap-1.5 sm:gap-2 rounded-lg px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-medium ${step >= 1 ? 'gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
           {step > 1 ? <CheckCircle className="h-4 w-4" /> : <span className="h-5 w-5 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs">1</span>}
-          Create Owner
+          <span className="hidden sm:inline">Create Owner</span><span className="sm:hidden">Owner</span>
         </div>
         <div className="h-px flex-1 bg-border" />
-        <div className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium ${step === 2 ? 'gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+        <div className={`flex items-center gap-1.5 sm:gap-2 rounded-lg px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-medium ${step === 2 ? 'gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
           <span className="h-5 w-5 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs">2</span>
-          Add Business
+          <span className="hidden sm:inline">Add Business</span><span className="sm:hidden">Business</span>
         </div>
       </div>
 

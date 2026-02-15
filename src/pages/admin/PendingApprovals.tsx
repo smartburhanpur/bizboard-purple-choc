@@ -25,8 +25,8 @@ export default function PendingApprovals() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Pending Approvals</h1>
-        <p className="text-muted-foreground">Review and approve business listing requests</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Pending Approvals</h1>
+        <p className="text-sm text-muted-foreground">Review and approve business listing requests</p>
       </div>
 
       {/* Detail Modal */}
@@ -92,25 +92,25 @@ export default function PendingApprovals() {
                   <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>
                   <TableCell><StatusBadge status={b.verification.status} /></TableCell>
                   <TableCell>
-                    <div className="flex justify-end gap-1">
+                    <div className="flex flex-wrap justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
                         <Info className="h-4 w-4" />
                       </Button>
                       <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1"
                         onClick={() => approveMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Approved' }) })}
                         disabled={approveMutation.isPending}>
-                        <Check className="h-3.5 w-3.5" /> Approve
+                        <Check className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Approve</span>
                       </Button>
                       <Button size="sm" variant="outline" className="text-destructive border-destructive/30 gap-1"
                         onClick={() => rejectMutation.mutate({ id: b._id, rejectionReason: 'Rejected' }, { onSuccess: () => toast({ title: 'Rejected' }) })}
                         disabled={rejectMutation.isPending}>
-                        <X className="h-3.5 w-3.5" /> Reject
+                        <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Reject</span>
                       </Button>
                       {b.paymentDetails.paymentStatus === 'pending' && (
                         <Button size="sm" variant="outline" className="text-info gap-1"
                           onClick={() => verifyPaymentMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Payment Verified' }) })}
                           disabled={verifyPaymentMutation.isPending}>
-                          Verify Payment
+                          <span className="hidden sm:inline">Verify Payment</span><span className="sm:hidden">Verify</span>
                         </Button>
                       )}
                     </div>

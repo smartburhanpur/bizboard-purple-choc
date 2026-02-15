@@ -21,8 +21,8 @@ export default function SalesmanDashboard() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Welcome, {user?.name}</h1>
-        <p className="text-muted-foreground">Your field operations overview</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Welcome, {user?.name}</h1>
+        <p className="text-sm text-muted-foreground">Your field operations overview</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -41,6 +41,7 @@ export default function SalesmanDashboard() {
         <div className="p-5 border-b border-border">
           <h3 className="font-display font-semibold text-foreground">My Recent Businesses</h3>
         </div>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -66,6 +67,7 @@ export default function SalesmanDashboard() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

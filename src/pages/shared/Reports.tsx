@@ -52,8 +52,8 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Reports & Analytics</h1>
-        <p className="text-muted-foreground">Platform performance insights calculated from data</p>
+        <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">Reports & Analytics</h1>
+        <p className="text-sm text-muted-foreground">Platform performance insights calculated from data</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -71,9 +71,9 @@ export default function ReportsPage() {
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         {/* Approval Breakdown Pie */}
-        <div className="rounded-xl border bg-card card-shadow p-6">
+        <div className="rounded-xl border bg-card card-shadow p-4 sm:p-6">
           <h3 className="font-display font-semibold text-foreground mb-4">Business Approval Breakdown</h3>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
