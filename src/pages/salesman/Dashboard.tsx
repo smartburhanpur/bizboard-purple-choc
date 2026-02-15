@@ -1,22 +1,21 @@
 import { Building2, CheckCircle, Clock, Crown, CreditCard } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
-import { mockBusinesses, mockPayments } from '@/data/mockData';
+import { useDashboardStats } from '@/services/dashboardService';
+import { useBusinesses } from '@/services/businessService';
 import { useAuth } from '@/contexts/AuthContext';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { StatsSkeleton, TableSkeleton } from '@/components/TableSkeleton';
 
 export default function SalesmanDashboard() {
   const { user } = useAuth();
-  const myBusinesses = mockBusinesses.filter(b => b.createdBy === user?.id);
-  const myPayments = mockPayments.filter(p => p.salesmanId === user?.id);
-
-  const stats = {
-    total: myBusinesses.length,
-    approved: myBusinesses.filter(b => b.status === 'approved').length,
-    pending: myBusinesses.filter(b => b.status === 'pending').length,
-    premiumSold: myBusinesses.filter(b => b.listingType === 'premium' && b.status === 'approved').length,
-    collected: myPayments.filter(p => p.status === 'verified').reduce((s, p) => s + p.amount, 0),
-  };
+  const { data: stats, isLoading: statsLoading } = useDashboardStats('salesman');
+  const { data: businessesData, isLoading: businessesLoading } = useBusinesses({
+    createdBy: user?._id,
+    limit: 5,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  });
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -26,11 +25,15 @@ export default function SalesmanDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        <StatsCard title="Total Added" value={stats.total} icon={Building2} variant="primary" />
-        <StatsCard title="Approved" value={stats.approved} icon={CheckCircle} variant="success" />
-        <StatsCard title="Pending" value={stats.pending} icon={Clock} variant="warning" />
-        <StatsCard title="Premium Sold" value={stats.premiumSold} icon={Crown} variant="premium" />
-        <StatsCard title="Collected" value={`₹${stats.collected.toLocaleString()}`} icon={CreditCard} variant="info" />
+        {statsLoading ? <StatsSkeleton count={5} /> : stats && (
+          <>
+            <StatsCard title="Total Added" value={stats.totalBusinesses} icon={Building2} variant="primary" />
+            <StatsCard title="Approved" value={stats.premiumListings} icon={CheckCircle} variant="success" />
+            <StatsCard title="Pending" value={stats.pendingApprovals} icon={Clock} variant="warning" />
+            <StatsCard title="Premium Sold" value={stats.premiumRequests} icon={Crown} variant="premium" />
+            <StatsCard title="Collected" value={`₹${(stats.totalRevenue || 0).toLocaleString()}`} icon={CreditCard} variant="info" />
+          </>
+        )}
       </div>
 
       <div className="rounded-xl border bg-card card-shadow">
@@ -48,15 +51,18 @@ export default function SalesmanDashboard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {myBusinesses.slice(0, 5).map((b) => (
-              <TableRow key={b.id}>
-                <TableCell className="font-medium">{b.name}</TableCell>
-                <TableCell className="text-muted-foreground">{b.category}</TableCell>
+            {businessesLoading ? <TableSkeleton cols={5} /> : businessesData?.data?.map((b) => (
+              <TableRow key={b._id}>
+                <TableCell className="font-medium">{b.businessName}</TableCell>
+                <TableCell className="text-muted-foreground">{b.categoryId}</TableCell>
                 <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
-                <TableCell><StatusBadge status={b.status} /></TableCell>
-                <TableCell className="text-muted-foreground">{b.createdAt}</TableCell>
+                <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
+                <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
+            {!businessesLoading && (!businessesData?.data || businessesData.data.length === 0) && (
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No businesses yet</TableCell></TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

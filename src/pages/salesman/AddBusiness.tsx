@@ -4,114 +4,198 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockCategories, mockCities } from '@/data/mockData';
+import { useCategories } from '@/services/categoryService';
+import { useCreateBusiness } from '@/services/businessService';
+import { useCreateUser } from '@/services/userService';
 import { useToast } from '@/hooks/use-toast';
-import { Building2 } from 'lucide-react';
+import { Building2, UserPlus } from 'lucide-react';
 
 export default function AddBusiness() {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [ownerId, setOwnerId] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Step 1: Owner form
+  const [ownerData, setOwnerData] = useState({ name: '', mobile: '', email: '' });
+  const createOwnerMutation = useCreateUser();
+
+  // Step 2: Business form
+  const [businessData, setBusinessData] = useState({
+    businessName: '',
+    categoryId: '',
+    phone: '',
+    address: '',
+    city: '',
+    listingType: 'normal' as 'normal' | 'premium',
+    paymentDetails: {
+      amount: 0,
+      paymentMode: 'cash' as 'cash' | 'upi',
+      paymentNote: '',
+    },
+  });
+  const createBusinessMutation = useCreateBusiness();
+  const { data: categoriesData } = useCategories();
+
+  const handleCreateOwner = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    toast({ title: 'Business Submitted', description: 'The business has been submitted for review. Status: Pending' });
-    setLoading(false);
-    (e.target as HTMLFormElement).reset();
+    createOwnerMutation.mutate(
+      { ...ownerData, role: 'owner' },
+      {
+        onSuccess: (user) => {
+          toast({ title: 'Owner Created', description: `${user.name} has been created` });
+          setOwnerId(user._id);
+          setStep(2);
+        },
+        onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed to create owner', variant: 'destructive' }),
+      }
+    );
+  };
+
+  const handleCreateBusiness = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      ...businessData,
+      paymentDetails: {
+        ...businessData.paymentDetails,
+        paymentStatus: 'pending' as const,
+      },
+    };
+    createBusinessMutation.mutate(payload, {
+      onSuccess: () => {
+        toast({ title: 'Business Submitted', description: 'The business has been submitted for review. Status: Pending' });
+        setStep(1);
+        setOwnerId('');
+        setOwnerData({ name: '', mobile: '', email: '' });
+        setBusinessData({
+          businessName: '', categoryId: '', phone: '', address: '', city: '',
+          listingType: 'normal',
+          paymentDetails: { amount: 0, paymentMode: 'cash', paymentNote: '' },
+        });
+      },
+      onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed to create business', variant: 'destructive' }),
+    });
   };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground">Add New Business</h1>
-        <p className="text-muted-foreground">Submit a new business listing for review</p>
+        <p className="text-muted-foreground">Step {step} of 2 — {step === 1 ? 'Create Owner' : 'Business Details'}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="rounded-xl border bg-card card-shadow p-6 space-y-5">
-        <div className="flex items-center gap-3 pb-4 border-b border-border">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
-            <Building2 className="h-5 w-5 text-primary-foreground" />
+      {step === 1 ? (
+        <form onSubmit={handleCreateOwner} className="rounded-xl border bg-card card-shadow p-6 space-y-5">
+          <div className="flex items-center gap-3 pb-4 border-b border-border">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
+              <UserPlus className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h3 className="font-display font-semibold text-foreground">Step 1: Create Owner/User</h3>
+              <p className="text-xs text-muted-foreground">Create the business owner first</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-display font-semibold text-foreground">Business Details</h3>
-            <p className="text-xs text-muted-foreground">Fill in the business information</p>
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
-            <Label>Business Name *</Label>
-            <Input placeholder="Enter business name" required maxLength={100} />
-          </div>
-          <div className="space-y-2">
-            <Label>Category *</Label>
-            <Select required>
-              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-              <SelectContent>
-                {mockCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>City *</Label>
-            <Select required>
-              <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
-              <SelectContent>
-                {mockCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Phone *</Label>
-            <Input placeholder="+91 98765 43210" required maxLength={15} />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label>Address *</Label>
-            <Input placeholder="Full business address" required maxLength={200} />
-          </div>
-        </div>
-
-        <div className="border-t border-border pt-5">
-          <h4 className="font-semibold text-foreground mb-4">Listing & Payment</h4>
           <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Name *</Label>
+              <Input value={ownerData.name} onChange={e => setOwnerData(p => ({ ...p, name: e.target.value }))} required />
+            </div>
             <div className="space-y-2">
-              <Label>Listing Type *</Label>
-              <Select required>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+              <Label>Mobile *</Label>
+              <Input value={ownerData.mobile} onChange={e => setOwnerData(p => ({ ...p, mobile: e.target.value }))} required />
+            </div>
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input type="email" value={ownerData.email} onChange={e => setOwnerData(p => ({ ...p, email: e.target.value }))} required />
+            </div>
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button type="submit" className="gradient-primary text-primary-foreground px-8" disabled={createOwnerMutation.isPending}>
+              {createOwnerMutation.isPending ? 'Creating...' : 'Create Owner & Continue'}
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={handleCreateBusiness} className="rounded-xl border bg-card card-shadow p-6 space-y-5">
+          <div className="flex items-center gap-3 pb-4 border-b border-border">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
+              <Building2 className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h3 className="font-display font-semibold text-foreground">Step 2: Business Details</h3>
+              <p className="text-xs text-muted-foreground">Fill in the business information</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Business Name *</Label>
+              <Input value={businessData.businessName} onChange={e => setBusinessData(p => ({ ...p, businessName: e.target.value }))} required maxLength={100} />
+            </div>
+            <div className="space-y-2">
+              <Label>Category *</Label>
+              <Select value={businessData.categoryId} onValueChange={v => setBusinessData(p => ({ ...p, categoryId: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="normal">Normal (Free)</SelectItem>
-                  <SelectItem value="premium">Premium (Paid)</SelectItem>
+                  {categoriesData?.data?.map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Payment Mode</Label>
-              <Select>
-                <SelectTrigger><SelectValue placeholder="Select mode" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="upi">UPI</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>City *</Label>
+              <Input value={businessData.city} onChange={e => setBusinessData(p => ({ ...p, city: e.target.value }))} required />
             </div>
             <div className="space-y-2">
-              <Label>Amount Collected (₹)</Label>
-              <Input type="number" placeholder="0" min={0} />
+              <Label>Phone *</Label>
+              <Input value={businessData.phone} onChange={e => setBusinessData(p => ({ ...p, phone: e.target.value }))} required maxLength={15} />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label>Payment Note</Label>
-              <Textarea placeholder="Any notes about the payment..." maxLength={500} />
+              <Label>Address *</Label>
+              <Input value={businessData.address} onChange={e => setBusinessData(p => ({ ...p, address: e.target.value }))} required maxLength={200} />
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-end pt-2">
-          <Button type="submit" className="gradient-primary text-primary-foreground px-8" disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit Business'}
-          </Button>
-        </div>
-      </form>
+          <div className="border-t border-border pt-5">
+            <h4 className="font-semibold text-foreground mb-4">Listing & Payment</h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Listing Type *</Label>
+                <Select value={businessData.listingType} onValueChange={(v: 'normal' | 'premium') => setBusinessData(p => ({ ...p, listingType: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal (Free)</SelectItem>
+                    <SelectItem value="premium">Premium (Paid)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Payment Mode</Label>
+                <Select value={businessData.paymentDetails.paymentMode} onValueChange={(v: 'cash' | 'upi') => setBusinessData(p => ({ ...p, paymentDetails: { ...p.paymentDetails, paymentMode: v } }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="upi">UPI</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Amount Collected (₹)</Label>
+                <Input type="number" value={businessData.paymentDetails.amount} onChange={e => setBusinessData(p => ({ ...p, paymentDetails: { ...p.paymentDetails, amount: Number(e.target.value) } }))} min={0} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Payment Note</Label>
+                <Textarea value={businessData.paymentDetails.paymentNote} onChange={e => setBusinessData(p => ({ ...p, paymentDetails: { ...p.paymentDetails, paymentNote: e.target.value } }))} maxLength={500} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between pt-2">
+            <Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button>
+            <Button type="submit" className="gradient-primary text-primary-foreground px-8" disabled={createBusinessMutation.isPending}>
+              {createBusinessMutation.isPending ? 'Submitting...' : 'Submit Business'}
+            </Button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
