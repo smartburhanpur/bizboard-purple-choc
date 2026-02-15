@@ -1,60 +1,85 @@
-import apiClient from '@/lib/apiClient';
-import type { User, ApiResponse, PaginatedResponse, UserFilters, Subscription } from '@/types';
+import { mockUsers } from '@/data/mockData';
+import type { User, PaginatedResponse, UserFilters, Subscription } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-const BASE = '/users';
+const delay = (ms = 400) => new Promise(r => setTimeout(r, ms));
+
+// In-memory state
+let users = [...mockUsers];
+let nextId = 100;
 
 export const userService = {
   getAll: async (params?: UserFilters): Promise<PaginatedResponse<User>> => {
-    const { data } = await apiClient.get<PaginatedResponse<User>>(BASE, { params });
-    return data;
+    await delay();
+    let filtered = [...users];
+    if (params?.role) filtered = filtered.filter(u => u.role === params.role);
+    if (params?.status) filtered = filtered.filter(u => u.status === params.status);
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      filtered = filtered.filter(u => u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s) || u.mobile.includes(s));
+    }
+    const page = params?.page || 1;
+    const limit = params?.limit || 20;
+    const total = filtered.length;
+    const start = (page - 1) * limit;
+    const data = filtered.slice(start, start + limit);
+    return { success: true, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   },
 
   getById: async (id: string): Promise<User> => {
-    const { data } = await apiClient.get<ApiResponse<User>>(`${BASE}/${id}`);
-    return data.data;
+    await delay(200);
+    const user = users.find(u => u._id === id);
+    if (!user) throw new Error('User not found');
+    return { ...user };
   },
 
   create: async (payload: Partial<User>): Promise<User> => {
-    const { data } = await apiClient.post<ApiResponse<User>>(BASE, payload);
-    return data.data;
+    await delay(600);
+    const newUser: User = {
+      _id: `usr_new_${nextId++}`,
+      name: payload.name || '',
+      mobile: payload.mobile || '',
+      email: payload.email || '',
+      role: payload.role || 'user',
+      status: 'active',
+      subscription: { status: 'none' },
+      createdAt: new Date().toISOString(),
+    };
+    users = [newUser, ...users];
+    return newUser;
   },
 
   update: async (id: string, payload: Partial<User>): Promise<User> => {
-    const { data } = await apiClient.put<ApiResponse<User>>(`${BASE}/${id}`, payload);
-    return data.data;
+    await delay(400);
+    users = users.map(u => u._id === id ? { ...u, ...payload, updatedAt: new Date().toISOString() } : u);
+    return users.find(u => u._id === id)!;
   },
 
   delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`${BASE}/${id}`);
+    await delay(300);
+    users = users.filter(u => u._id !== id);
   },
 
   toggleBlock: async (id: string): Promise<User> => {
-    const { data } = await apiClient.patch<ApiResponse<User>>(`${BASE}/${id}/toggle-block`);
-    return data.data;
+    await delay(400);
+    users = users.map(u => u._id === id ? { ...u, status: u.status === 'active' ? 'blocked' : 'active' } : u);
+    return users.find(u => u._id === id)!;
   },
 
   activateSubscription: async (id: string, subscription: Partial<Subscription>): Promise<User> => {
-    const { data } = await apiClient.patch<ApiResponse<User>>(`${BASE}/${id}/subscription`, subscription);
-    return data.data;
+    await delay(500);
+    users = users.map(u => u._id === id ? { ...u, subscription: { ...u.subscription, ...subscription, status: 'active' } } : u);
+    return users.find(u => u._id === id)!;
   },
 };
 
 // ===== React Query Hooks =====
-
 export function useUsers(params?: UserFilters) {
-  return useQuery({
-    queryKey: ['users', params],
-    queryFn: () => userService.getAll(params),
-  });
+  return useQuery({ queryKey: ['users', params], queryFn: () => userService.getAll(params) });
 }
 
 export function useUser(id: string) {
-  return useQuery({
-    queryKey: ['users', id],
-    queryFn: () => userService.getById(id),
-    enabled: !!id,
-  });
+  return useQuery({ queryKey: ['users', id], queryFn: () => userService.getById(id), enabled: !!id });
 }
 
 export function useCreateUser() {

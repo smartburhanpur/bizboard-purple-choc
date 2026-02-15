@@ -1,5 +1,5 @@
-import apiClient from '@/lib/apiClient';
-import type { User, ApiResponse } from '@/types';
+import { mockUsers, mockCredentials } from '@/data/mockData';
+import type { User } from '@/types';
 
 export interface LoginPayload {
   email: string;
@@ -11,14 +11,25 @@ export interface LoginResponse {
   user: User;
 }
 
+// Simulate network delay
+const delay = (ms = 500) => new Promise(r => setTimeout(r, ms));
+
 export const authService = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
-    const { data } = await apiClient.post<ApiResponse<LoginResponse>>('/auth/login-with-password', payload);
-    return data.data;
+    await delay(800);
+    const cred = mockCredentials[payload.email];
+    if (!cred || cred.password !== payload.password) {
+      throw { response: { data: { message: 'Invalid email or password' } } };
+    }
+    const user = mockUsers.find(u => u._id === cred.userId);
+    if (!user) throw { response: { data: { message: 'User not found' } } };
+    return { token: `mock_jwt_token_${user._id}_${Date.now()}`, user };
   },
 
   getMe: async (): Promise<User> => {
-    const { data } = await apiClient.get<ApiResponse<User>>('/auth/me');
-    return data.data;
+    await delay(300);
+    const stored = localStorage.getItem('nearmeb2b_user');
+    if (stored) return JSON.parse(stored);
+    throw new Error('Not authenticated');
   },
 };

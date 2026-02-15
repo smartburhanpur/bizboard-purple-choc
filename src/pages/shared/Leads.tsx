@@ -6,12 +6,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TableSkeleton } from '@/components/TableSkeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { Lead, LeadFilters, User } from '@/types';
+import { getUserName } from '@/data/mockData';
+import type { Lead, LeadFilters } from '@/types';
 
 export default function LeadsPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<LeadFilters>({ page: 1, limit: 20 });
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const { toast } = useToast();
 
   const { data, isLoading } = useLeads({ ...filters, search: search || undefined });
@@ -20,7 +25,6 @@ export default function LeadsPage() {
   const handleStatusChange = (id: string, status: Lead['status']) => {
     updateStatusMutation.mutate({ id, status }, {
       onSuccess: () => toast({ title: 'Lead Updated' }),
-      onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed', variant: 'destructive' }),
     });
   };
 
@@ -30,6 +34,25 @@ export default function LeadsPage() {
         <h1 className="font-display text-2xl font-bold text-foreground">Leads Management</h1>
         <p className="text-muted-foreground">Track and manage customer leads</p>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Lead Details</DialogTitle></DialogHeader>
+          {selectedLead && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><p className="text-muted-foreground">Customer Name</p><p className="font-medium">{selectedLead.customerName}</p></div>
+                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedLead.phone}</p></div>
+                <div><p className="text-muted-foreground">Status</p><StatusBadge status={selectedLead.status} /></div>
+                <div><p className="text-muted-foreground">Assigned To</p><p className="font-medium">{getUserName(selectedLead.assignedTo as string)}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground">Message</p><p className="font-medium">{selectedLead.message}</p></div>
+                <div><p className="text-muted-foreground">Created At</p><p className="font-medium">{new Date(selectedLead.createdAt).toLocaleString()}</p></div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="rounded-xl border bg-card card-shadow">
         <div className="p-5 border-b border-border">
@@ -62,10 +85,13 @@ export default function LeadsPage() {
                   <TableCell className="text-muted-foreground">{lead.phone}</TableCell>
                   <TableCell className="text-muted-foreground max-w-[200px] truncate">{lead.message}</TableCell>
                   <TableCell><StatusBadge status={lead.status} /></TableCell>
-                  <TableCell className="text-muted-foreground">{typeof lead.assignedTo === 'object' ? (lead.assignedTo as User).name : lead.assignedTo}</TableCell>
+                  <TableCell className="text-muted-foreground">{getUserName(lead.assignedTo as string)}</TableCell>
                   <TableCell className="text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <div className="flex justify-end">
+                    <div className="flex justify-end items-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedLead(lead); setDetailOpen(true); }}>
+                        <Info className="h-4 w-4" />
+                      </Button>
                       <Select value={lead.status} onValueChange={(v: Lead['status']) => handleStatusChange(lead._id, v)}>
                         <SelectTrigger className="w-[130px] h-8">
                           <SelectValue />

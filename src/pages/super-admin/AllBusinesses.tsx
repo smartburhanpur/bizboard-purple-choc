@@ -1,26 +1,31 @@
 import { useState } from 'react';
-import { useBusinesses, useApproveBusiness, useRejectBusiness, useVerifyPayment, useToggleVisibility, useActivatePremium, useDeleteBusiness } from '@/services/businessService';
+import { useBusinesses, useApproveBusiness, useRejectBusiness, useVerifyPayment, useToggleVisibility, useActivatePremium, useDeleteBusiness, useUpdateBusiness } from '@/services/businessService';
 import { useCategories } from '@/services/categoryService';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
 import { DataTableHeader } from '@/components/DataTableHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TableSkeleton } from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
-import { Eye, Check, X, Trash2, Crown, EyeOff, Eye as EyeIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Check, X, Trash2, Crown, EyeOff, Eye as EyeIcon, Pencil, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { BusinessFilters, User } from '@/types';
+import { getUserName, getCategoryName } from '@/data/mockData';
+import type { BusinessFilters, Business } from '@/types';
 
 export default function AllBusinessesPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<BusinessFilters>({ page: 1, limit: 20 });
+  const [editOpen, setEditOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Business>>({});
   const { toast } = useToast();
 
-  const queryParams: BusinessFilters = {
-    ...filters,
-    search: search || undefined,
-  };
-
-  const { data, isLoading } = useBusinesses(queryParams);
+  const { data, isLoading } = useBusinesses({ ...filters, search: search || undefined });
   const { data: categoriesData } = useCategories();
   const approveMutation = useApproveBusiness();
   const rejectMutation = useRejectBusiness();
@@ -28,42 +33,31 @@ export default function AllBusinessesPage() {
   const toggleVisibilityMutation = useToggleVisibility();
   const activatePremiumMutation = useActivatePremium();
   const deleteMutation = useDeleteBusiness();
+  const updateMutation = useUpdateBusiness();
 
   const handleApprove = (id: string, name: string) => {
     approveMutation.mutate(id, {
       onSuccess: () => toast({ title: 'Approved', description: `${name} has been approved` }),
-      onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed to approve', variant: 'destructive' }),
     });
   };
 
   const handleReject = (id: string, name: string) => {
     rejectMutation.mutate({ id, rejectionReason: 'Rejected by admin' }, {
       onSuccess: () => toast({ title: 'Rejected', description: `${name} has been rejected` }),
-      onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed to reject', variant: 'destructive' }),
     });
   };
 
-  const handleVerifyPayment = (id: string) => {
-    verifyPaymentMutation.mutate(id, {
-      onSuccess: () => toast({ title: 'Payment Verified' }),
-    });
+  const openEdit = (b: Business) => {
+    setSelectedBiz(b);
+    setEditForm({ ...b });
+    setEditOpen(true);
   };
 
-  const handleToggleVisibility = (id: string) => {
-    toggleVisibilityMutation.mutate(id, {
-      onSuccess: () => toast({ title: 'Visibility Updated' }),
-    });
-  };
-
-  const handleActivatePremium = (id: string) => {
-    activatePremiumMutation.mutate(id, {
-      onSuccess: () => toast({ title: 'Premium Activated' }),
-    });
-  };
-
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id, {
-      onSuccess: () => toast({ title: 'Business Deleted' }),
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBiz) return;
+    updateMutation.mutate({ id: selectedBiz._id, payload: editForm }, {
+      onSuccess: () => { toast({ title: 'Business Updated' }); setEditOpen(false); },
     });
   };
 
@@ -75,6 +69,90 @@ export default function AllBusinessesPage() {
         <h1 className="font-display text-2xl font-bold text-foreground">All Businesses</h1>
         <p className="text-muted-foreground">Manage all business listings across the platform</p>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Business Details</DialogTitle></DialogHeader>
+          {selectedBiz && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><p className="text-muted-foreground">Business Name</p><p className="font-medium">{selectedBiz.businessName}</p></div>
+                <div><p className="text-muted-foreground">Category</p><p className="font-medium">{getCategoryName(selectedBiz.categoryId)}</p></div>
+                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBiz.phone}</p></div>
+                <div><p className="text-muted-foreground">City</p><p className="font-medium">{selectedBiz.city}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground">Address</p><p className="font-medium">{selectedBiz.address}</p></div>
+                <div><p className="text-muted-foreground">Listing Type</p><ListingTypeBadge type={selectedBiz.listingType} /></div>
+                <div><p className="text-muted-foreground">Approval Status</p><StatusBadge status={selectedBiz.approvalStatus} /></div>
+                <div><p className="text-muted-foreground">Premium</p><p className="font-medium">{selectedBiz.isPremium ? '★ Yes' : 'No'}</p></div>
+                <div><p className="text-muted-foreground">Visible</p><p className="font-medium">{selectedBiz.isVisible ? 'Yes' : 'No'}</p></div>
+              </div>
+              <div className="border-t pt-3">
+                <p className="font-semibold text-foreground mb-2">Payment Details</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><p className="text-muted-foreground">Amount</p><p className="font-medium">₹{selectedBiz.paymentDetails.amount.toLocaleString()}</p></div>
+                  <div><p className="text-muted-foreground">Mode</p><p className="font-medium uppercase">{selectedBiz.paymentDetails.paymentMode}</p></div>
+                  <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBiz.paymentDetails.paymentStatus} /></div>
+                  <div><p className="text-muted-foreground">Verification</p><StatusBadge status={selectedBiz.verification.status} /></div>
+                  {selectedBiz.paymentDetails.paymentNote && (
+                    <div className="col-span-2"><p className="text-muted-foreground">Note</p><p className="font-medium">{selectedBiz.paymentDetails.paymentNote}</p></div>
+                  )}
+                </div>
+              </div>
+              <div className="border-t pt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div><p className="text-muted-foreground">Created By</p><p className="font-medium">{getUserName(selectedBiz.createdBy as string)}</p></div>
+                  <div><p className="text-muted-foreground">Created At</p><p className="font-medium">{new Date(selectedBiz.createdAt).toLocaleString()}</p></div>
+                </div>
+              </div>
+              {selectedBiz.rejectionReason && (
+                <div className="border-t pt-3">
+                  <p className="text-muted-foreground">Rejection Reason</p>
+                  <p className="font-medium text-destructive">{selectedBiz.rejectionReason}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Edit Business</DialogTitle></DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="space-y-2"><Label>Business Name</Label><Input value={editForm.businessName || ''} onChange={e => setEditForm(p => ({ ...p, businessName: e.target.value }))} required /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select value={editForm.categoryId || ''} onValueChange={v => setEditForm(p => ({ ...p, categoryId: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{categoryOptions.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2"><Label>City</Label><Input value={editForm.city || ''} onChange={e => setEditForm(p => ({ ...p, city: e.target.value }))} /></div>
+            </div>
+            <div className="space-y-2"><Label>Phone</Label><Input value={editForm.phone || ''} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} /></div>
+            <div className="space-y-2"><Label>Address</Label><Input value={editForm.address || ''} onChange={e => setEditForm(p => ({ ...p, address: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Listing Type</Label>
+                <Select value={editForm.listingType || 'normal'} onValueChange={(v: 'normal' | 'premium') => setEditForm(p => ({ ...p, listingType: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="normal">Normal</SelectItem><SelectItem value="premium">Premium</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Payment Amount</Label>
+                <Input type="number" value={editForm.paymentDetails?.amount || 0} onChange={e => setEditForm(p => ({ ...p, paymentDetails: { ...p.paymentDetails!, amount: Number(e.target.value) } }))} />
+              </div>
+            </div>
+            <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="rounded-xl border bg-card card-shadow">
         <div className="p-5 border-b border-border">
@@ -110,15 +188,21 @@ export default function AllBusinessesPage() {
                     {b.businessName}
                     {b.isPremium && <span className="ml-2 text-xs text-premium">★</span>}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{b.categoryId}</TableCell>
+                  <TableCell className="text-muted-foreground">{getCategoryName(b.categoryId)}</TableCell>
                   <TableCell className="text-muted-foreground">{b.city}</TableCell>
                   <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                   <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
                   <TableCell><StatusBadge status={b.paymentDetails.paymentStatus} /></TableCell>
-                  <TableCell className="text-muted-foreground">{typeof b.createdBy === 'object' ? (b.createdBy as User).name : b.createdBy}</TableCell>
+                  <TableCell className="text-muted-foreground">{getUserName(b.createdBy as string)}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleToggleVisibility(b._id)} disabled={toggleVisibilityMutation.isPending}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBiz(b); setDetailOpen(true); }}>
+                        <Info className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(b)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleVisibilityMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Visibility Updated' }) })} disabled={toggleVisibilityMutation.isPending}>
                         {b.isVisible ? <EyeIcon className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       </Button>
                       {b.approvalStatus === 'pending' && (
@@ -132,16 +216,16 @@ export default function AllBusinessesPage() {
                         </>
                       )}
                       {b.paymentDetails.paymentStatus === 'pending' && (
-                        <Button variant="ghost" size="sm" className="text-info" onClick={() => handleVerifyPayment(b._id)} disabled={verifyPaymentMutation.isPending}>
+                        <Button variant="ghost" size="sm" className="text-info" onClick={() => verifyPaymentMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Payment Verified' }) })} disabled={verifyPaymentMutation.isPending}>
                           Verify
                         </Button>
                       )}
                       {!b.isPremium && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-premium" onClick={() => handleActivatePremium(b._id)} disabled={activatePremiumMutation.isPending}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-premium" onClick={() => activatePremiumMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Premium Activated' }) })} disabled={activatePremiumMutation.isPending}>
                           <Crown className="h-4 w-4" />
                         </Button>
                       )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(b._id)} disabled={deleteMutation.isPending}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteMutation.mutate(b._id, { onSuccess: () => toast({ title: 'Business Deleted' }) })} disabled={deleteMutation.isPending}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -154,19 +238,14 @@ export default function AllBusinessesPage() {
             </TableBody>
           </Table>
         </div>
-        {/* Pagination */}
         {data?.pagination && data.pagination.totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t border-border">
             <p className="text-sm text-muted-foreground">
               Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} total)
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm" disabled={data.pagination.page >= data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>
-                Next
-              </Button>
+              <Button variant="outline" size="sm" disabled={data.pagination.page <= 1} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) - 1 }))}>Previous</Button>
+              <Button variant="outline" size="sm" disabled={data.pagination.page >= data.pagination.totalPages} onClick={() => setFilters(p => ({ ...p, page: (p.page || 1) + 1 }))}>Next</Button>
             </div>
           </div>
         )}

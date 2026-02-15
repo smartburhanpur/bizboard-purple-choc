@@ -1,11 +1,11 @@
-import { Building2, Users, CreditCard, TrendingUp, ClipboardCheck, Crown } from 'lucide-react';
+import { Building2, Users, CreditCard, TrendingUp, ClipboardCheck, Crown, MessageSquare, CalendarCheck } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
 import { useDashboardStats } from '@/services/dashboardService';
 import { useBusinesses } from '@/services/businessService';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsSkeleton, TableSkeleton } from '@/components/TableSkeleton';
-import type { User } from '@/types';
+import { getUserName } from '@/data/mockData';
 
 export default function SuperAdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats('super_admin');
@@ -19,7 +19,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {statsLoading ? <StatsSkeleton count={6} /> : stats && (
+        {statsLoading ? <StatsSkeleton count={8} /> : stats && (
           <>
             <StatsCard title="Total Businesses" value={stats.totalBusinesses} icon={Building2} variant="primary" />
             <StatsCard title="Premium Listings" value={stats.premiumListings} icon={Crown} variant="premium" />
@@ -27,6 +27,8 @@ export default function SuperAdminDashboard() {
             <StatsCard title="Total Revenue" value={`₹${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} variant="success" />
             <StatsCard title="Pending Approvals" value={stats.pendingApprovals} icon={ClipboardCheck} variant="warning" />
             <StatsCard title="Verified Payments" value={stats.verifiedPayments} icon={TrendingUp} variant="default" />
+            <StatsCard title="Total Leads" value={stats.totalLeads || 0} icon={MessageSquare} variant="info" />
+            <StatsCard title="Total Bookings" value={stats.totalBookings || 0} icon={CalendarCheck} variant="success" />
           </>
         )}
       </div>
@@ -53,7 +55,7 @@ export default function SuperAdminDashboard() {
                 <TableCell>{b.city}</TableCell>
                 <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                 <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
-                <TableCell className="text-muted-foreground">{typeof b.createdBy === 'object' ? (b.createdBy as User).name : b.createdBy}</TableCell>
+                <TableCell className="text-muted-foreground">{getUserName(b.createdBy as string)}</TableCell>
                 <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}

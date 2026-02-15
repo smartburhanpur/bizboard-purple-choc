@@ -1,26 +1,41 @@
 import { useState } from 'react';
-import { useBookings, useUpdateBookingStatus } from '@/services/bookingService';
+import { useBookings, useUpdateBookingStatus, useUpdateBookingPaymentStatus } from '@/services/bookingService';
 import { StatusBadge } from '@/components/StatusBadge';
 import { DataTableHeader } from '@/components/DataTableHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TableSkeleton } from '@/components/TableSkeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { Booking, BookingFilters, Business } from '@/types';
+import { mockBusinesses } from '@/data/mockData';
+import type { Booking, BookingFilters } from '@/types';
+
+function getBusinessName(id: string): string {
+  return mockBusinesses.find(b => b._id === id)?.businessName || id;
+}
 
 export default function BookingsPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<BookingFilters>({ page: 1, limit: 20 });
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
 
   const { data, isLoading } = useBookings({ ...filters, search: search || undefined });
   const updateStatusMutation = useUpdateBookingStatus();
+  const updatePaymentMutation = useUpdateBookingPaymentStatus();
 
   const handleStatusChange = (id: string, bookingStatus: Booking['bookingStatus']) => {
     updateStatusMutation.mutate({ id, bookingStatus }, {
       onSuccess: () => toast({ title: 'Booking Updated' }),
-      onError: (err: any) => toast({ title: 'Error', description: err?.response?.data?.message || 'Failed', variant: 'destructive' }),
+    });
+  };
+
+  const handlePaymentChange = (id: string, paymentStatus: Booking['paymentStatus']) => {
+    updatePaymentMutation.mutate({ id, paymentStatus }, {
+      onSuccess: () => toast({ title: 'Payment Status Updated' }),
     });
   };
 
@@ -30,6 +45,26 @@ export default function BookingsPage() {
         <h1 className="font-display text-2xl font-bold text-foreground">Bookings Management</h1>
         <p className="text-muted-foreground">Track and manage customer bookings</p>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Booking Details</DialogTitle></DialogHeader>
+          {selectedBooking && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><p className="text-muted-foreground">Business</p><p className="font-medium">{getBusinessName(selectedBooking.businessId as string)}</p></div>
+                <div><p className="text-muted-foreground">Customer</p><p className="font-medium">{selectedBooking.customerName || '—'}</p></div>
+                <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{selectedBooking.phone || '—'}</p></div>
+                <div><p className="text-muted-foreground">Booking Date</p><p className="font-medium">{new Date(selectedBooking.bookingDate).toLocaleString()}</p></div>
+                <div><p className="text-muted-foreground">Booking Status</p><StatusBadge status={selectedBooking.bookingStatus} /></div>
+                <div><p className="text-muted-foreground">Payment Status</p><StatusBadge status={selectedBooking.paymentStatus} /></div>
+                <div><p className="text-muted-foreground">Created At</p><p className="font-medium">{new Date(selectedBooking.createdAt).toLocaleString()}</p></div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="rounded-xl border bg-card card-shadow">
         <div className="p-5 border-b border-border">
@@ -59,16 +94,19 @@ export default function BookingsPage() {
             <TableBody>
               {isLoading ? <TableSkeleton cols={7} /> : data?.data?.map((booking) => (
                 <TableRow key={booking._id}>
-                  <TableCell className="font-medium">{typeof booking.businessId === 'object' ? (booking.businessId as Business).businessName : booking.businessId}</TableCell>
+                  <TableCell className="font-medium">{getBusinessName(booking.businessId as string)}</TableCell>
                   <TableCell className="text-muted-foreground">{booking.customerName || '—'}</TableCell>
                   <TableCell className="text-muted-foreground">{booking.phone || '—'}</TableCell>
                   <TableCell><StatusBadge status={booking.bookingStatus} /></TableCell>
                   <TableCell><StatusBadge status={booking.paymentStatus} /></TableCell>
                   <TableCell className="text-muted-foreground">{new Date(booking.bookingDate).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <div className="flex justify-end">
+                    <div className="flex justify-end items-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedBooking(booking); setDetailOpen(true); }}>
+                        <Info className="h-4 w-4" />
+                      </Button>
                       <Select value={booking.bookingStatus} onValueChange={(v: Booking['bookingStatus']) => handleStatusChange(booking._id, v)}>
-                        <SelectTrigger className="w-[130px] h-8">
+                        <SelectTrigger className="w-[120px] h-8">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -76,6 +114,16 @@ export default function BookingsPage() {
                           <SelectItem value="confirmed">Confirmed</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={booking.paymentStatus} onValueChange={(v: Booking['paymentStatus']) => handlePaymentChange(booking._id, v)}>
+                        <SelectTrigger className="w-[110px] h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="refunded">Refunded</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

@@ -6,10 +6,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { StatusBadge, ListingTypeBadge } from '@/components/StatusBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsSkeleton, TableSkeleton } from '@/components/TableSkeleton';
+import { getCategoryName } from '@/data/mockData';
 
 export default function SalesmanDashboard() {
   const { user } = useAuth();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats('salesman');
+  const { data: stats, isLoading: statsLoading } = useDashboardStats('salesman', user?._id);
   const { data: businessesData, isLoading: businessesLoading } = useBusinesses({
     createdBy: user?._id,
     limit: 5,
@@ -28,7 +29,7 @@ export default function SalesmanDashboard() {
         {statsLoading ? <StatsSkeleton count={5} /> : stats && (
           <>
             <StatsCard title="Total Added" value={stats.totalBusinesses} icon={Building2} variant="primary" />
-            <StatsCard title="Approved" value={stats.premiumListings} icon={CheckCircle} variant="success" />
+            <StatsCard title="Approved" value={stats.approvedToday} icon={CheckCircle} variant="success" />
             <StatsCard title="Pending" value={stats.pendingApprovals} icon={Clock} variant="warning" />
             <StatsCard title="Premium Sold" value={stats.premiumRequests} icon={Crown} variant="premium" />
             <StatsCard title="Collected" value={`₹${(stats.totalRevenue || 0).toLocaleString()}`} icon={CreditCard} variant="info" />
@@ -54,7 +55,7 @@ export default function SalesmanDashboard() {
             {businessesLoading ? <TableSkeleton cols={5} /> : businessesData?.data?.map((b) => (
               <TableRow key={b._id}>
                 <TableCell className="font-medium">{b.businessName}</TableCell>
-                <TableCell className="text-muted-foreground">{b.categoryId}</TableCell>
+                <TableCell className="text-muted-foreground">{getCategoryName(b.categoryId)}</TableCell>
                 <TableCell><ListingTypeBadge type={b.listingType} /></TableCell>
                 <TableCell><StatusBadge status={b.approvalStatus} /></TableCell>
                 <TableCell className="text-muted-foreground">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
